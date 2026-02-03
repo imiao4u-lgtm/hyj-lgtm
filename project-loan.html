@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project JAXX - DCP ARCHIVE</title>
+    <!-- 引入字体 -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Noto+Sans+SC:wght@300;400;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* 复用 index.html 的 CSS 变量 */
+        :root {
+            --bg-color: #F8F8F8;
+            --structure: #0A0A0A;
+            --soul: #FF7B38;
+            --grid-color: rgba(138, 138, 138, 0.05);
+            --font-mono:
+                'JetBrains Mono',
+                /* 英文数字首选 */
+                'Noto Sans SC',
+                /* 中文首选 (你想要的) */
+                'PingFang SC',
+                /* macOS 系统中文兜底 */
+                'Microsoft YaHei',
+                /* Windows 系统中文兜底 */
+                'SimHei',
+                /* 旧版 Windows 兜底 */
+                monospace;
+            /* 最后的通用兜底 */
+
+            --font-main: 'Noto Sans SC', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--structure);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        /* 基础样式复用 */
+        .global-grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .cursor-follower {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--structure);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: width 0.3s, height 0.3s;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-dot {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: var(--soul);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10000;
+        }
+
+        /* ==================== 
+           PROJECT SPECIFIC LAYOUT 
+           ==================== */
+        .project-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 100px 20px;
+            /* 页面入场动画 */
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 导航 */
+        .back-nav {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            margin-bottom: 60px;
+            display: inline-block;
+            border-bottom: 1px solid var(--structure);
+            padding-bottom: 2px;
+            text-decoration: none;
+            color: var(--structure);
+        }
+
+        /* Header */
+        .proj-header {
+            margin-bottom: 80px;
+            border-bottom: 2px solid var(--structure);
+            padding-bottom: 40px;
+        }
+
+        .proj-meta {
+            font-family: var(--font-mono);
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .proj-title {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .proj-subtitle {
+            font-size: 20px;
+            color: #555;
+            max-width: 600px;
+        }
+
+        /* 通用 Section */
+        .content-section {
+            margin-bottom: 100px;
+        }
+
+        .section-label {
+            font-family: var(--font-mono);
+            font-weight: bold;
+            color: var(--soul);
+            border-left: 4px solid var(--soul);
+            padding-left: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #ddd;
+            margin-left: 20px;
+        }
+
+        /* 图片占位符 (根据MD尺寸) */
+        .img-placeholder {
+            background: #EBEBEB;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            color: #888;
+            font-size: 12px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .img-placeholder::before {
+            content: attr(data-size);
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 10px;
+            /* background: var(--structure); */
+            color: #fff;
+            padding: 2px 5px;
+        }
+
+        .img-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* 1. Intro 布局 */
+        .intro-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .intro-text p {
+            margin-bottom: 20px;
+            color: #444;
+        }
+
+        /* 2. Challenge Grid (三栏) */
+        .challenge-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .ch-card {
+            border: 1px solid #ddd;
+            padding: 25px;
+            background: #fff;
+            transition: 0.3s;
+        }
+
+        .ch-card:hover {
+            border-color: var(--soul);
+            box-shadow: 5px 5px 0 rgba(255, 123, 56, 0.1);
+        }
+
+        .ch-tag {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            background: #000;
+            color: #fff;
+            padding: 2px 8px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .ch-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .ch-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 3. System (Step Layout) */
+        .system-step {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .step-num {
+            font-family: var(--font-mono);
+            font-size: 64px;
+            color: #E0E0E0;
+            font-weight: bold;
+            line-height: 0.8;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-family: var(--font-mono);
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* 4. UX Framework */
+        .framework-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+            border: 1px solid var(--structure);
+            padding: 30px;
+            background: #fff;
+        }
+
+        .fw-list-item {
+            margin-bottom: 20px;
+        }
+
+        .fw-head {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--soul);
+        }
+
+        .fw-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 5. Innovation */
+        .quote-box {
+            background: var(--structure);
+            color: #fff;
+            padding: 40px;
+            font-family: var(--font-mono);
+            margin-top: 40px;
+            border-left: 5px solid var(--soul);
+        }
+
+        .quote-text {
+            font-style: italic;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .quote-author {
+            opacity: 0.6;
+            font-size: 12px;
+        }
+
+        .chip-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+        }
+
+        .chip-table td,
+        .chip-table th {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .chip-table th {
+            background: #f5f5f5;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+
+            .intro-grid,
+            .challenge-grid,
+            .system-step,
+            .framework-layout {
+                grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .proj-title {
+                font-size: 32px;
+            }
+        }
+
+        /* ==================== 
+           NEW LAYOUT ENGINE (REFACTOR) 
+           ==================== */
+
+        /* 增加全局呼吸感 */
+        .project-container {
+            max-width: 1200px;
+            /* 加宽容器以容纳非对称布局 */
+            padding: 120px 40px;
+        }
+
+        /* 统一的图文网格系统：默认左文右图，或者左侧标题右侧内容 */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            /* 左侧固定/窄，右侧宽 */
+            gap: 60px;
+            /* 更大的间距增加呼吸感 */
+            align-items: start;
+            margin-bottom: 120px;
+        }
+
+        /* 文本列样式 */
+        .text-col {
+            position: relative;
+        }
+
+        .text-col h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .text-col p {
+            font-size: 15px;
+            color: #444;
+            margin-bottom: 24px;
+            text-align: justify;
+            /* 两端对齐更整洁 */
+        }
+
+        /* 视觉列样式 */
+        .visual-col {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* 图片容器优化：增加边框感和图注 */
+        figure {
+            margin: 0;
+            width: 100%;
+        }
+
+        .img-frame {
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #E5E5E5;
+            transition: border-color 0.3s;
+        }
+
+        .img-frame:hover {
+            border-color: var(--soul);
+        }
+
+        .img-frame img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        figcaption {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #999;
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ==================== 
+           SECTION SPECIFIC REFINEMENTS 
+           ==================== */
+
+        /* 重构 Header: 档案卡片风格 */
+        .header-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 40px;
+            padding-bottom: 60px;
+            border-bottom: 1px solid var(--structure);
+            margin-bottom: 80px;
+        }
+
+        .header-main h1 {
+            font-size: 64px;
+            line-height: 0.95;
+            letter-spacing: -1px;
+            margin-bottom: 30px;
+        }
+
+        .header-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag-pill {
+            border: 1px solid var(--structure);
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .header-meta-box {
+            border-left: 1px solid #ddd;
+            padding-left: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .meta-row {
+            margin-bottom: 20px;
+        }
+
+        .meta-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #888;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* 重构 Intro: 更加杂志化 */
+        .intro-lead {
+            font-size: 20px;
+            line-height: 1.6;
+            font-weight: 400;
+            color: var(--structure);
+            border-left: 4px solid var(--soul);
+            padding-left: 20px;
+        }
+
+        /* 重构 Challenge: 卡片更透气 */
+        .challenge-wrapper {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .ch-card {
+            background: #fff;
+            padding: 30px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #eee;
+            /* 更轻的边框 */
+        }
+
+        .ch-card .ch-tag {
+            background: transparent;
+            color: var(--soul);
+            border: 1px solid var(--soul);
+            margin-bottom: 20px;
+            align-self: flex-start;
+        }
+
+        /* 重构 System: 时间轴样式 */
+        .system-timeline {
+            border-left: 1px solid #ddd;
+            padding-left: 0;
+            margin-left: 20px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 50px;
+            padding-bottom: 60px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            /* Adjust based on border width to center */
+            top: 0;
+            width: 9px;
+            height: 9px;
+            background: var(--bg-color);
+            border: 1px solid var(--structure);
+            border-radius: 50%;
+        }
+
+        .timeline-header {
+            display: flex;
+            align-items: baseline;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .t-num {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--soul);
+        }
+
+        .t-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 900px) {
+
+            .grid-layout,
+            .header-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .header-meta-box {
+                border-left: none;
+                border-top: 1px solid #ddd;
+                padding-left: 0;
+                padding-top: 20px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .challenge-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* === 新增补充 CSS (Add to <style>) === */
+
+        /* 强调型列表：用于“关注重点行为” */
+        .highlight-list {
+            list-style: none;
+            margin-top: 24px;
+            border-top: 1px solid #eee;
+        }
+
+        .highlight-list li {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .highlight-list strong {
+            display: block;
+            color: var(--structure);
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .highlight-list span {
+            font-size: 13px;
+            color: #666;
+            display: block;
+            line-height: 1.5;
+        }
+
+        /* 垂直堆叠的图文组：用于“修补断点”部分 */
+        .stack-group {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .stack-item .img-frame {
+            margin-bottom: 12px;
+        }
+
+        .stack-item-desc {
+            font-size: 13px;
+            color: #555;
+            padding-left: 10px;
+            border-left: 2px solid var(--soul);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="global-grid-bg"></div>
+    <div class="cursor-follower" id="cursor"></div>
+    <div class="cursor-dot" id="dot"></div>
+
+    <div class="project-container">
+
+        <!-- Navigation -->
+        <a href="#" class="back-nav">
+            <span style="color:var(--soul)">&lt;</span> RETURN TO INDEX
+        </a>
+
+        <!-- 1. Header Area: Archival Style -->
+        <header class="header-grid">
+            <div class="header-main">
+                <h1 class="proj-title">KINGDEE<br>LOAN PROJECT</h1>
+                <p class="proj-subtitle">Logic-driven Redesign<br>金蝶效贷：从业务视角重构信息层级</p>
+
+                <div class="header-tags" style="margin-top: 30px;">
+                    <span class="tag-pill">FinTech</span>
+                    <span class="tag-pill">B-End</span>
+                    <span class="tag-pill">Redesign</span>
+                </div>
+            </div>
+
+            <div class="header-meta-box">
+                <div class="meta-row">
+                    <span class="meta-label">CONTEXT</span>
+                    <span class="meta-value">Experience Upgrade</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">FOCUS</span>
+                    <span class="meta-value">Aging Adaptation</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">OUTPUT</span>
+                    <span class="meta-value">Visual System<span
+                            style="color:var(--soul); font-size: 15px;">.</span></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 2. Context & Strategy -->
+        <section class="grid-layout">
+            <div class="text-col">
+                <div class="section-label">01 / STRATEGY</div>
+                <h3>务实的设计适配</h3>
+                <p class="intro-lead">
+                    单纯的样式优化并不能说服团队投入资源。
+                </p>
+                <p>
+                    在陪同活动（Shop-Along）中发现，适老化体验不足和消息提醒模糊是导致人工客服介入的主要原因。对于40岁左右的核心信贷用户，<strong>信息密度</strong>往往意味着决策的安全感，简单的“做减法”并不符合实际。
+                </p>
+                <p>
+                    因此，我决定从信息层级整理切入，以此指导后续的结构与视觉改进。<br>
+                    将改版的重心放在了对重点行为的流程重组上。
+                </p>
+
+                <ul class="highlight-list">
+                    <li>
+                        <strong>查看内容的清晰一致性</strong>
+                        <span>保证用户在保持高信息密度的前提下，能快速捕捉核心参数。</span>
+                    </li>
+                    <li>
+                        <strong>KYC 流程的引导性</strong>
+                        <span>针对软件熟悉度较低的用户，优化验证环节的视觉反馈。</span>
+                    </li>
+                    <li>
+                        <strong>动态提醒机制</strong>
+                        <span>针对贷中贷后长路径中的状态断点进行强化。</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="visual-col">
+                <!-- Image: 582*495 -->
+                <div class="img-frame">
+                    <figure>
+                        <div class="img-placeholder">
+                            <img src="IMG/loan-01.png" alt="before & after">
+                        </div>
+                        <figcaption>
+                            <span>BEFORE & AFTER</span>
+                            <span>01</span>
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Solution: Repairing Breakpoints -->
+        <section class="grid-layout">
+            <div class="text-col">
+                <div class="section-label">02 / SOLUTION</div>
+                <h3>修补断点：<br>长周期交易中的引导策略</h3>
+                <p>
+                    金融信贷产品的操作往往跨越多个周期，且存在代操作或中断后再继续的常态，这导致用户极易在长路径中迷失。
+                </p>
+                <p>
+                    为了解决这种感知上的断层，我们重点优化了状态反馈与任务触达，让用户在复杂的业务流中始终清楚“下一步做什么”。
+                </p>
+            </div>
+
+            <div class="visual-col stack-group">
+                <!-- Item 1 -->
+                <div class="stack-item">
+                    <figure>
+                        <div class="img-frame">
+                            <div class="img-placeholder">
+                                <img src="IMG/loan-01.svg" alt="提示操作">
+                            </div>
+                            <figcaption>
+                                <span>ACTION: PROMPT</span>
+                                <span>02</span>
+                            </figcaption>
+                        </div>
+
+                    </figure>
+                    <div class="stack-item-desc" style="margin-top: 15px;">
+                        <strong>提示操作：</strong>在个人中心增加显示一个待办模块，在适当的时候显示，兼顾简洁和实用。未完成企业信息依然推荐产品，但是需要在中间信息流插入添加企业信息的提示。
+                    </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="stack-item">
+                    <figure>
+                        <div class="img-frame">
+                            <div class="img-placeholder">
+                                <img src="IMG/loan-02.svg" alt="合并冗余">
+                            </div>
+                            <figcaption>
+                                <span>ACTION: MERGE</span>
+                                <span>02</span>
+                            </figcaption>
+                    </figure>
+                    <div class="stack-item-desc" style="margin-top: 15px;">
+                        <strong>合并冗余：</strong>平铺信息有助于用户快速直达目标，但随着信息量的增加，对信息进行分类整理才是更好的选择
+                    </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="stack-item">
+                    <figure>
+                        <div class="img-frame">
+                            <img src="IMG/loan-03.svg" alt="明确主次">
+                        </div>
+                        <figcaption>
+                            <span>ACTION: HIERARCHY</span>
+                            <span>02</span>
+                        </figcaption>
+                    </figure>
+                    <div class="stack-item-desc" style="margin-top: 15px;">
+                        <strong>明确主次：</strong>重新定义主次关系，重组简化结构，让用户减少干扰，专注于完成交易流程。
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Visual System -->
+        <section class="grid-layout">
+            <div class="text-col">
+                <div class="section-label">03 / VISUAL SYSTEM</div>
+                <h3>标准化清晰：<br>基于无障碍标准的重塑</h3>
+                <p>
+                    针对用户群体（主要是中年群体）的视觉习惯，我引入了更规范的视觉系统，核心在于提高阅读的舒适度与信息的确定性。参考 <strong>W3C
+                        无障碍标准</strong>，我们建立了一套更具辨识度的视觉语言。
+                </p>
+                <div style="margin-top: 30px;">
+                    <div class="meta-row">
+                        <span class="meta-label">Approach 01</span>
+                        <p style="font-size: 13px; margin-bottom: 15px;">
+                            <strong>增强对比与层级：</strong>通过定义标准的 Design Token，统一了全站的间距、字号与颜色对比度，确保在各种光线下，关键数据和操作按钮都清晰可辨。
+                        </p>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">Approach 02</span>
+                        <p style="font-size: 13px; margin-bottom: 0;">
+                            <strong>组件化沉淀：</strong>将这些规范应用到基础组件中，保证了跨页面的体验一致性。这种标准化的做法，有效降低了用户在不同功能间切换时的认知摩擦。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visual-col">
+                <!-- Image: 809*756 -->
+                <figure>
+                    <div class="img-frame">
+                        <div class="img-placeholder">
+                            <img src="IMG/loan-04.png" alt="视觉规范系统">
+                        </div>
+                        <figcaption>
+                            <span>ACCESSIBILITY STANDARD</span>
+                            <span>03</span>
+                        </figcaption>
+                    </div>
+
+                </figure>
+            </div>
+        </section>
+
+        <!-- 5. Interaction / Conclusion (Full Width) -->
+        <div class="project-container" style="padding: 0; max-width: 100%;">
+            <div class="text-col">
+                <div class="section-label">04 / OUTCOME</div>
+                <h3>交互呈现：<br>让工具回归工具本身</h3>
+            </div>
+            <div class="visual-col" style="padding-right: 50%; margin-bottom: 20px;">
+                <p>
+                    在业务逻辑复杂的金融领域，设计的本质是降低理解成本。我们通过对信息结构的重新梳理，让效贷产品在保留专业性的同时，变得更加平易近人。
+            </div>
+
+            <!-- Image: 1184*620 -->
+            <div class="img-frame" style="height: auto; background: #fff;">
+                <figure>
+                    <div class="img-placeholder" style="background-color: #333; padding: 3% 3% 0 3%;">
+                        <img src="IMG/loan-05.svg" alt="交互呈现">
+                    </div>
+                </figure>
+                <figcaption>
+                    <span>FINAL INTERFACE</span>
+                    <span>04</span>
+                </figcaption>
+            </div>
+        </div>
+
+        <!-- Footer / Credits -->
+        <footer
+            style="margin-top: 60px; padding-top: 40px; border-top: 1px dashed #ccc; display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12px; color: #888;">
+            <span>© KINGDEE LOAN PROJECT</span>
+            <span>END OF ARCHIVE</span>
+        </footer>
+    </div>
+
+    <!-- Script for Cursor Interaction -->
+    <script>
+        const cursor = document.getElementById('cursor');
+        const dot = document.getElementById('dot');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+        });
+
+        document.addEventListener('mousedown', () => {
+            cursor.style.width = '30px';
+            cursor.style.height = '30px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            cursor.style.width = '40px';
+            cursor.style.height = '40px';
+        });
+
+        // Add hover effect for links/images
+        const hoverables = document.querySelectorAll('a, .img-frame, .ch-card');
+        hoverables.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.style.borderColor = 'var(--soul)';
+                dot.style.background = 'transparent';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.style.borderColor = 'var(--structure)';
+                dot.style.background = 'var(--soul)';
+            });
+        });
+    </script>
+</body>
+
+</html>

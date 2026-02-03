@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project JAXX - DCP ARCHIVE</title>
+    <!-- 引入字体 -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Noto+Sans+SC:wght@300;400;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* 复用 index.html 的 CSS 变量 */
+        :root {
+            --bg-color: #F8F8F8;
+            --structure: #0A0A0A;
+            --soul: #FF7B38;
+            --grid-color: rgba(138, 138, 138, 0.05);
+            --font-mono:
+                'JetBrains Mono',
+                /* 英文数字首选 */
+                'Noto Sans SC',
+                /* 中文首选 (你想要的) */
+                'PingFang SC',
+                /* macOS 系统中文兜底 */
+                'Microsoft YaHei',
+                /* Windows 系统中文兜底 */
+                'SimHei',
+                /* 旧版 Windows 兜底 */
+                monospace;
+            /* 最后的通用兜底 */
+
+            --font-main: 'Noto Sans SC', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--structure);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        /* 基础样式复用 */
+        .global-grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .cursor-follower {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--structure);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: width 0.3s, height 0.3s;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-dot {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: var(--soul);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10000;
+        }
+
+        /* ==================== 
+           PROJECT SPECIFIC LAYOUT 
+           ==================== */
+        .project-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 100px 20px;
+            /* 页面入场动画 */
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 导航 */
+        .back-nav {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            margin-bottom: 60px;
+            display: inline-block;
+            border-bottom: 1px solid var(--structure);
+            padding-bottom: 2px;
+            text-decoration: none;
+            color: var(--structure);
+        }
+
+        /* Header */
+        .proj-header {
+            margin-bottom: 80px;
+            border-bottom: 2px solid var(--structure);
+            padding-bottom: 40px;
+        }
+
+        .proj-meta {
+            font-family: var(--font-mono);
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .proj-title {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .proj-subtitle {
+            font-size: 20px;
+            color: #555;
+            max-width: 600px;
+        }
+
+        /* 通用 Section */
+        .content-section {
+            margin-bottom: 100px;
+        }
+
+        .section-label {
+            font-family: var(--font-mono);
+            font-weight: bold;
+            color: var(--soul);
+            border-left: 4px solid var(--soul);
+            padding-left: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #ddd;
+            margin-left: 20px;
+        }
+
+        /* 图片占位符 (根据MD尺寸) */
+        .img-placeholder {
+            background: #EBEBEB;
+            border: 1px dashed #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            color: #888;
+            font-size: 12px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .img-placeholder::before {
+            content: attr(data-size);
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 10px;
+            /* background: var(--structure); */
+            color: #fff;
+            padding: 2px 5px;
+        }
+
+        .img-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* 1. Intro 布局 */
+        .intro-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .intro-text p {
+            margin-bottom: 20px;
+            color: #444;
+        }
+
+        /* 2. Challenge Grid (三栏) */
+        .challenge-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .ch-card {
+            border: 1px solid #ddd;
+            padding: 25px;
+            background: #fff;
+            transition: 0.3s;
+        }
+
+        .ch-card:hover {
+            border-color: var(--soul);
+            box-shadow: 5px 5px 0 rgba(255, 123, 56, 0.1);
+        }
+
+        .ch-tag {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            background: #000;
+            color: #fff;
+            padding: 2px 8px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .ch-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .ch-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 3. System (Step Layout) */
+        .system-step {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .step-num {
+            font-family: var(--font-mono);
+            font-size: 64px;
+            color: #E0E0E0;
+            font-weight: bold;
+            line-height: 0.8;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-family: var(--font-mono);
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* 4. UX Framework */
+        .framework-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+            border: 1px solid var(--structure);
+            padding: 30px;
+            background: #fff;
+        }
+
+        .fw-list-item {
+            margin-bottom: 20px;
+        }
+
+        .fw-head {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--soul);
+        }
+
+        .fw-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 5. Innovation */
+        .quote-box {
+            background: var(--structure);
+            color: #fff;
+            padding: 40px;
+            font-family: var(--font-mono);
+            margin-top: 40px;
+            border-left: 5px solid var(--soul);
+        }
+
+        .quote-text {
+            font-style: italic;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .quote-author {
+            opacity: 0.6;
+            font-size: 12px;
+        }
+
+        .chip-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+        }
+
+        .chip-table td,
+        .chip-table th {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .chip-table th {
+            background: #f5f5f5;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+
+            .intro-grid,
+            .challenge-grid,
+            .system-step,
+            .framework-layout {
+                grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .proj-title {
+                font-size: 32px;
+            }
+        }
+
+        /* ==================== 
+           NEW LAYOUT ENGINE (REFACTOR) 
+           ==================== */
+
+        /* 增加全局呼吸感 */
+        .project-container {
+            max-width: 1200px;
+            /* 加宽容器以容纳非对称布局 */
+            padding: 120px 40px;
+        }
+
+        /* 统一的图文网格系统：默认左文右图，或者左侧标题右侧内容 */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            /* 左侧固定/窄，右侧宽 */
+            gap: 60px;
+            /* 更大的间距增加呼吸感 */
+            align-items: start;
+            margin-bottom: 120px;
+        }
+
+        /* 文本列样式 */
+        .text-col {
+            position: relative;
+        }
+
+        .text-col h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .text-col p {
+            font-size: 15px;
+            color: #444;
+            margin-bottom: 24px;
+            text-align: justify;
+            /* 两端对齐更整洁 */
+        }
+
+        /* 视觉列样式 */
+        .visual-col {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* 图片容器优化：增加边框感和图注 */
+        figure {
+            margin: 0;
+            width: 100%;
+        }
+
+        .img-frame {
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #E5E5E5;
+            transition: border-color 0.3s;
+        }
+
+        .img-frame:hover {
+            border-color: var(--soul);
+        }
+
+        .img-frame img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        figcaption {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #999;
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ==================== 
+           SECTION SPECIFIC REFINEMENTS 
+           ==================== */
+
+        /* 重构 Header: 档案卡片风格 */
+        .header-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 40px;
+            padding-bottom: 60px;
+            border-bottom: 1px solid var(--structure);
+            margin-bottom: 80px;
+        }
+
+        .header-main h1 {
+            font-size: 64px;
+            line-height: 0.95;
+            letter-spacing: -1px;
+            margin-bottom: 30px;
+        }
+
+        .header-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag-pill {
+            border: 1px solid var(--structure);
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .header-meta-box {
+            border-left: 1px solid #ddd;
+            padding-left: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .meta-row {
+            margin-bottom: 20px;
+        }
+
+        .meta-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #888;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* 重构 Intro: 更加杂志化 */
+        .intro-lead {
+            font-size: 20px;
+            line-height: 1.6;
+            font-weight: 400;
+            color: var(--structure);
+            border-left: 4px solid var(--soul);
+            padding-left: 20px;
+        }
+
+        /* 重构 Challenge: 卡片更透气 */
+        .challenge-wrapper {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .ch-card {
+            background: #fff;
+            padding: 30px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #eee;
+            /* 更轻的边框 */
+        }
+
+        .ch-card .ch-tag {
+            background: transparent;
+            color: var(--soul);
+            border: 1px solid var(--soul);
+            margin-bottom: 20px;
+            align-self: flex-start;
+        }
+
+        /* 重构 System: 时间轴样式 */
+        .system-timeline {
+            border-left: 1px solid #ddd;
+            padding-left: 0;
+            margin-left: 20px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 50px;
+            padding-bottom: 60px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            /* Adjust based on border width to center */
+            top: 0;
+            width: 9px;
+            height: 9px;
+            background: var(--bg-color);
+            border: 1px solid var(--structure);
+            border-radius: 50%;
+        }
+
+        .timeline-header {
+            display: flex;
+            align-items: baseline;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .t-num {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--soul);
+        }
+
+        .t-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 900px) {
+
+            .grid-layout,
+            .header-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .header-meta-box {
+                border-left: none;
+                border-top: 1px solid #ddd;
+                padding-left: 0;
+                padding-top: 20px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .challenge-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+        /* === 新增/补充 CSS (适配本次内容) === */
+
+        /* 全宽视觉容器：用于展示 Dashboard 和大图 */
+        .full-width-section {
+            margin-bottom: 120px;
+        }
+
+        .text-max-width {
+            max-width: 700px;
+            /* 限制正文宽度以保证阅读体验 */
+            margin-bottom: 40px;
+        }
+
+        /* 策略列表样式：用于展示“关键机制解构” */
+        .strategy-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .strategy-item {
+            margin-bottom: 25px;
+            padding-left: 20px;
+            border-left: 2px solid #eee;
+            transition: border-color 0.3s;
+        }
+
+        .strategy-item:hover {
+            border-left-color: var(--soul);
+        }
+
+        .st-title {
+            font-family: var(--font-main);
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: var(--structure);
+        }
+
+        .st-desc {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* 强调数字/重点 */
+        .highlight-num {
+            font-family: var(--font-mono);
+            color: var(--soul);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        /* 复盘部分的引用样式优化 */
+        .reflection-block {
+            background: #fff;
+            padding: 40px;
+            border: 1px solid var(--structure);
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="global-grid-bg"></div>
+    <div class="cursor-follower" id="cursor"></div>
+    <div class="cursor-dot" id="dot"></div>
+
+    <div class="project-container">
+
+        <!-- Navigation -->
+        <a href="index.html" class="back-nav">
+            <span style="color:var(--soul)">&lt;</span> RETURN TO INDEX
+        </a>
+
+        <!-- 1. Header Area: Project Overview -->
+        <header class="header-grid">
+            <div class="header-main">
+                <h1 class="proj-title">WAREHOUSE<br>RECEIPT FINANCING</h1>
+                <p class="proj-subtitle">Digitalizing Commodity Trading<br>将非标的大宗商品转化为银行可信的标准数字资产。</p>
+
+                <div class="header-tags" style="margin-top: 30px;">
+                    <span class="tag-pill">Supply Chain Finance</span>
+                    <span class="tag-pill">Blockchain</span>
+                    <span class="tag-pill">IoT & AI</span>
+                </div>
+            </div>
+
+            <div class="header-meta-box">
+                <div class="meta-row">
+                    <span class="meta-label">CLIENT</span>
+                    <span class="meta-value">GROUP INNOVATION</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">MY ROLE</span>
+                    <span class="meta-value">UI/UX LEAD</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">PLATFORM</span>
+                    <span class="meta-value">WEB / MONITORING</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 2. Intro Section: Context & Goal -->
+        <section class="grid-layout">
+            <div class="text-col">
+                <div class="section-label">01 / CONTEXT</div>
+                <p class="intro-lead">
+                    针对大宗商品贸易中信息不对称、货权管理难、风控成本高的痛点。
+                </p>
+                <p>
+                    本平台是集团创新赛道的战略级项目，旨在探索如何通过区块链、AI、物联网等技术，将非标的大宗商品转化为银行可信的标准数字资产。
+                </p>
+
+                <div style="margin-top: 40px;">
+                    <h4 class="fw-head">GOAL</h4>
+                    <p style="font-size: 14px; margin-bottom: 0;">
+                        连接金融机构（总/分部）、持货人、仓库、监管方、担保方，构建多方共识、物权清晰、闭环流转的供应链金融生态。
+                    </p>
+                </div>
+            </div>
+
+            <div class="visual-col">
+                <!-- 这里可以用一张概念图，或者留空保持呼吸感，此处用文字排版代替视觉 -->
+                <div class="quote-box" style="margin-top: 0;">
+                    <div class="quote-text">
+                        "Make the invisible assets visible and trustworthy."
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Challenge Section: Cards -->
+        <section class="content-section">
+            <div class="section-label">02 / CHALLENGE</div>
+            <div class="challenge-wrapper">
+                <!-- Card 1 -->
+                <div class="ch-card">
+                    <span class="ch-tag">STANDARDIZATION</span>
+                    <div class="ch-title">非标资产的标准化转换</div>
+                    <div class="ch-desc">
+                        市场缺乏成熟范式，需深度抽象线下复杂的大宗商品交易逻辑，将碎片化的贸易流转化为具备法律效力的数字仓单资产。
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="ch-card">
+                    <span class="ch-tag">COLLABORATION</span>
+                    <div class="ch-title">多机构管理下的协同</div>
+                    <div class="ch-desc">
+                        涉及多个机构和主体（银行、仓库、监管方），需要在复杂的协作环境下，确保信息流转的闭环与安全。
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="ch-card">
+                    <span class="ch-tag">SCALABILITY</span>
+                    <div class="ch-title">高频政策波动下的柔性架构</div>
+                    <div class="ch-desc">
+                        针对业务方向的快速迭代，构建高扩展性的金融组件系统，在不重构底层逻辑的前提下，快速响应风控规则的调整。
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Strategy Section: 结构化消化不确定性 -->
+        <section class="grid-layout">
+            <div class="text-col">
+                <div class="section-label">03 / STRATEGY</div>
+                <h3>用结构化方法<br>消化不确定性</h3>
+
+                <p><strong>1. 全生命周期建模</strong><br>
+                    针对 6 大角色的不同交互场景，构建一套覆盖“贸易起源-物权确立-债权公示-资金落地”的全链路闭环。确保每一个动作都在法律与技术层面产生双重校验。</p>
+
+                <p><strong>2. MVP 验证逻辑</strong><br>
+                    3周内完成可交互高保真原型，展示AI风控、区块认证、质押解质押等关键流程的技术价值，便于对外展示。</p>
+
+                <div style="margin-top: 30px;">
+                    <span class="meta-label">KEY MECHANISMS</span>
+                    <ul class="strategy-list">
+                        <li class="strategy-item">
+                            <span class="st-title">数字孪生与物权锚定</span>
+                            <span class="st-desc">确保每一个数字仓单都有唯一的物理标识，解决“看不见、摸不着”的信任难题。</span>
+                        </li>
+                        <li class="strategy-item">
+                            <span class="st-title">法定权益的数字化存证</span>
+                            <span class="st-desc">将中登登记回执与数据进行区块链存证，确保证据的“不可篡改性”和“溯源时效性”。</span>
+                        </li>
+                        <li class="strategy-item">
+                            <span class="st-title">证据驱动的准入决策</span>
+                            <span class="st-desc">系统消除人工比对时间差，从层面封堵操作真空期可能导致的二次质押风险。</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="visual-col">
+                <!-- 对应图片：全生命周期建模图 (860*265) -->
+                <figure>
+                    <div class="img-frame">
+                        <div class="img-placeholder" data-size="860 x 265" style="aspect-ratio: 860/265;">
+                            <!-- 这里替换为真实图片 -->
+                            <img src="https://placehold.co/860x265/EDEDED/999999?text=Lifecycle+Modeling+Diagram"
+                                alt="Lifecycle Modeling">
+                        </div>
+                    </div>
+                    <figcaption>
+                        <span>ASSET LIFECYCLE MODELING</span>
+                        <span>FIG 01</span>
+                    </figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <!-- 5. Design Section: 确定性设计 (Full Width for Large Image) -->
+        <section class="full-width-section">
+            <div class="text-max-width">
+                <div class="section-label">04 / DETERMINISTIC DESIGN</div>
+                <h3>多源异构数据的聚合与智能决策</h3>
+                <p>
+                    <strong>目标：化碎片数据为统一信用依据。</strong><br>
+                    大宗商品融资的难点在于信息的真伪难辨。我们改变了传统人工比对纸质仓单、中登网截图和现场照片的低效模式，通过设计<strong>确权看板</strong>，将物理空间（IoT监控）、法律地位（中登网登记）、数字身份（区块链哈希）进行深度聚合。
+                </p>
+                <p>
+                    用直观的状态位代替复杂的底层数据，让银行审批员能在一屏之内完成从资产溯源到放款决策的闭环。
+                </p>
+            </div>
+
+            <!-- Large Image -->
+            <figure>
+                <div class="img-frame">
+                    <div class="img-placeholder" data-size="1200 x 700" style="aspect-ratio: 16/9;">
+                        <!-- 这里替换为 Dashboard 大图 -->
+                        <img src="https://placehold.co/1200x700/EDEDED/999999?text=Unified+Credit+Dashboard+UI"
+                            alt="Dashboard UI">
+                    </div>
+                </div>
+                <figcaption>
+                    <span>UNIFIED CREDIT DASHBOARD</span>
+                    <span>FIG 02</span>
+                </figcaption>
+            </figure>
+        </section>
+
+        <!-- 6. Risk Control Section: 动态风控 (Split Layout) -->
+        <section class="grid-layout">
+            <div class="text-col">
+                <div class="section-label">05 / DYNAMIC RISK CONTROL</div>
+                <h3>异常状态的实时预警<br>与安全闭环</h3>
+
+                <div class="timeline-item" style="margin-top: 30px;">
+                    <div class="timeline-header">
+                        <span class="t-num">01</span>
+                        <span class="t-title">电子围栏监控</span>
+                    </div>
+                    <p>
+                        <strong>异常嗅探：</strong>深度集成仓储 IoT 传感器，一旦质押物发生非法位移或超出电子围栏，系统界面立即触发风险锁定。<br>
+                        <strong>确信传达：</strong>通过高饱和度的警报交互，确保风控人员第一时间捕获异常，并在区块链同步记录风险存证。
+                    </p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-header">
+                        <span class="t-num">02</span>
+                        <span class="t-title">穿透式审计</span>
+                    </div>
+                    <p>
+                        <strong>一键取证：</strong>每一行确权记录背后，都设计了一个“全链路确权报告”导出功能。它会汇总每次变更的区块链哈希值，形成不可篡改的证据链溯源。
+                    </p>
+                </div>
+            </div>
+
+            <div class="visual-col">
+                <!-- 对应图片：风控/预警界面 (Large Vertical or standard) -->
+                <figure>
+                    <div class="img-frame">
+                        <div class="img-placeholder" data-size="800 x 600" style="aspect-ratio: 4/3;">
+                            <img src="https://placehold.co/800x600/EDEDED/999999?text=Risk+Alert+System+Interface"
+                                alt="Risk Control UI">
+                        </div>
+                    </div>
+                    <figcaption>
+                        <span>IOT FENCE & ALERT SYSTEM</span>
+                        <span>FIG 03</span>
+                    </figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <!-- 7. Reflection Section: 复盘 -->
+        <section class="full-width-section" style="margin-bottom: 0;">
+            <div class="grid-layout">
+                <div class="text-col">
+                    <div class="section-label">06 / REFLECTION</div>
+                    <h3>在不确定性中锚定真实</h3>
+                    <p>
+                        在本项目中，作为 UI/UX 设计师，我的核心任务不仅是交付界面，更是在极高的业务不确定性中，通过设计手段将复杂的金融逻辑转化为可交互的确定性。
+                    </p>
+                    <div class="reflection-block">
+                        <p
+                            style="font-family: var(--font-mono); font-size: 13px; color: var(--soul); margin-bottom: 10px;">
+                            DESIGN PHILOSOPHY</p>
+                        <p style="font-weight: bold; margin-bottom: 15px;">在数字契约中重塑“真实”的权重</p>
+                        <p style="font-size: 14px; margin-bottom: 15px;">
+                            我试图跳出传统的信息展示范式，去构建一套关于资产真实性的交互语义。这种交互背后的深层逻辑是：<strong>将信用从依赖于人的主观判断，转移到对物理客观事实的直接观测。</strong>
+                        </p>
+                        <p style="font-size: 14px;">
+                            当复杂的金融确权过程被解构为一个个直观的证据节点，界面本身就演变成了一个透视物理世界的取景框——它消解了金融操作中的迟滞感，让远在数千公里外的实物变动，能够以一种近乎实时的方式触达决策者的感知。
+                        </p>
+                        <p style="font-size: 14px; margin-top: 15px; font-style: italic;">
+                            "UI 已经超越了信息的载体，成为了建立信任边界的骨架。"
+                        </p>
+                    </div>
+                </div>
+
+                <div class="visual-col">
+                    <figure>
+                        <div class="img-frame">
+                            <div class="img-placeholder" data-size="800 x 800" style="aspect-ratio: 1/1;">
+                                <img src="https://placehold.co/800x800/EDEDED/999999?text=Concept+Visualization"
+                                    alt="Reflection Art">
+                            </div>
+                        </div>
+                        <figcaption>
+                            <span>TRUST ARCHITECTURE</span>
+                            <span>FIG 04</span>
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer
+            style="margin-top: 100px; padding-top: 40px; border-top: 1px solid var(--structure); font-family: var(--font-mono); font-size: 12px; color: #888;">
+            <p>2026 / WAREHOUSE RECEIPT FINANCING PROJECT ARCHIVE.</p>
+        </footer>
+
+    </div>
+</body>
+
+</html>

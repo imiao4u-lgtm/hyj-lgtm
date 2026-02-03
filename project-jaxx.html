@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project JAXX - DCP ARCHIVE</title>
+    <!-- 引入字体 -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Noto+Sans+SC:wght@300;400;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #F8F8F8;
+            --structure: #0A0A0A;
+            --soul: #FF7B38;
+            --grid-color: rgba(138, 138, 138, 0.05);
+            --font-mono:
+                'JetBrains Mono',
+                'Noto Sans SC',
+                'PingFang SC',
+                'Microsoft YaHei',
+                'SimHei',
+                monospace;
+            --font-main: 'Noto Sans SC', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--structure);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        /* 基础样式复用 */
+        .global-grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .cursor-follower {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--structure);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: width 0.3s, height 0.3s;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-dot {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: var(--soul);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10000;
+        }
+
+        /* ==================== 
+           PROJECT SPECIFIC LAYOUT 
+           ==================== */
+        .project-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 100px 20px;
+            /* 页面入场动画 */
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 导航 */
+        .back-nav {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            margin-bottom: 60px;
+            display: inline-block;
+            border-bottom: 1px solid var(--structure);
+            padding-bottom: 2px;
+            text-decoration: none;
+            color: var(--structure);
+        }
+
+        /* Header */
+        .proj-header {
+            margin-bottom: 80px;
+            border-bottom: 2px solid var(--structure);
+            padding-bottom: 40px;
+        }
+
+        .proj-meta {
+            font-family: var(--font-mono);
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .proj-title {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .proj-subtitle {
+            font-size: 20px;
+            color: #555;
+            max-width: 600px;
+        }
+
+        /* 通用 Section */
+        .content-section {
+            margin-bottom: 100px;
+        }
+
+        .section-label {
+            font-family: var(--font-mono);
+            font-weight: bold;
+            color: var(--soul);
+            border-left: 4px solid var(--soul);
+            padding-left: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #ddd;
+            margin-left: 20px;
+        }
+
+        /* 图片占位符 (根据MD尺寸) */
+        .img-placeholder {
+            background: #EBEBEB;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            color: #888;
+            font-size: 12px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .img-placeholder::before {
+            content: attr(data-size);
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 10px;
+            /* background: var(--structure); */
+            color: #fff;
+            padding: 2px 5px;
+        }
+
+        .img-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* 1. Intro 布局 */
+        .intro-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .intro-text p {
+            margin-bottom: 20px;
+            color: #444;
+        }
+
+        /* 2. Challenge Grid (三栏) */
+        .challenge-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .ch-card {
+            border: 1px solid #ddd;
+            padding: 25px;
+            background: #fff;
+            transition: 0.3s;
+        }
+
+        .ch-card:hover {
+            border-color: var(--soul);
+            box-shadow: 5px 5px 0 rgba(255, 123, 56, 0.1);
+        }
+
+        .ch-tag {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            background: #000;
+            color: #fff;
+            padding: 2px 8px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .ch-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .ch-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 3. System (Step Layout) */
+        .system-step {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .step-num {
+            font-family: var(--font-mono);
+            font-size: 64px;
+            color: #E0E0E0;
+            font-weight: bold;
+            line-height: 0.8;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-family: var(--font-mono);
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* 4. UX Framework */
+        .framework-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+            border: 1px solid var(--structure);
+            padding: 30px;
+            background: #fff;
+        }
+
+        .fw-list-item {
+            margin-bottom: 20px;
+        }
+
+        .fw-head {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--soul);
+        }
+
+        .fw-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 5. Innovation */
+        .quote-box {
+            background: var(--structure);
+            color: #fff;
+            padding: 40px;
+            font-family: var(--font-mono);
+            margin-top: 40px;
+            border-left: 5px solid var(--soul);
+        }
+
+        .quote-text {
+            font-style: italic;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .quote-author {
+            opacity: 0.6;
+            font-size: 12px;
+        }
+
+        .chip-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+        }
+
+        .chip-table td,
+        .chip-table th {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .chip-table th {
+            background: #f5f5f5;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+
+            .intro-grid,
+            .challenge-grid,
+            .system-step,
+            .framework-layout {
+                grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .proj-title {
+                font-size: 32px;
+            }
+        }
+
+        /* ==================== 
+           NEW LAYOUT ENGINE (REFACTOR) 
+           ==================== */
+
+        /* 增加全局呼吸感 */
+        .project-container {
+            max-width: 1200px;
+            /* 加宽容器以容纳非对称布局 */
+            padding: 120px 40px;
+        }
+
+        /* 统一的图文网格系统：默认左文右图，或者左侧标题右侧内容 */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            /* 左侧固定/窄，右侧宽 */
+            gap: 60px;
+            /* 更大的间距增加呼吸感 */
+            align-items: start;
+            margin-bottom: 120px;
+        }
+
+        /* 文本列样式 */
+        .text-col {
+            position: relative;
+        }
+
+        .text-col h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .text-col p {
+            font-size: 15px;
+            color: #444;
+            margin-bottom: 24px;
+            text-align: justify;
+            /* 两端对齐更整洁 */
+        }
+
+        /* 视觉列样式 */
+        .visual-col {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* 图片容器优化：增加边框感和图注 */
+        figure {
+            margin: 0;
+            width: 100%;
+        }
+
+        .img-frame {
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #E5E5E5;
+            transition: border-color 0.3s;
+        }
+
+        .img-frame:hover {
+            border-color: var(--soul);
+        }
+
+        .img-frame img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        figcaption {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #999;
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ==================== 
+           SECTION SPECIFIC REFINEMENTS 
+           ==================== */
+
+        /* 重构 Header: 档案卡片风格 */
+        .header-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 40px;
+            padding-bottom: 60px;
+            border-bottom: 1px solid var(--structure);
+            margin-bottom: 80px;
+        }
+
+        .header-main h1 {
+            font-size: 64px;
+            line-height: 0.95;
+            letter-spacing: -1px;
+            margin-bottom: 30px;
+        }
+
+        .header-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag-pill {
+            border: 1px solid var(--structure);
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .header-meta-box {
+            border-left: 1px solid #ddd;
+            padding-left: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .meta-row {
+            margin-bottom: 20px;
+        }
+
+        .meta-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #888;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* 重构 Intro: 更加杂志化 */
+        .intro-lead {
+            font-size: 20px;
+            line-height: 1.6;
+            font-weight: 400;
+            color: var(--structure);
+            border-left: 4px solid var(--soul);
+            padding-left: 20px;
+        }
+
+        /* 重构 Challenge: 卡片更透气 */
+        .challenge-wrapper {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .ch-card {
+            background: #fff;
+            padding: 30px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #eee;
+            /* 更轻的边框 */
+        }
+
+        .ch-card .ch-tag {
+            background: transparent;
+            color: var(--soul);
+            border: 1px solid var(--soul);
+            margin-bottom: 20px;
+            align-self: flex-start;
+        }
+
+        /* 重构 System: 时间轴样式 */
+        .system-timeline {
+            border-left: 1px solid #ddd;
+            padding-left: 0;
+            margin-left: 20px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 50px;
+            padding-bottom: 60px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            /* Adjust based on border width to center */
+            top: 0;
+            width: 9px;
+            height: 9px;
+            background: var(--bg-color);
+            border: 1px solid var(--structure);
+            border-radius: 50%;
+        }
+
+        .timeline-header {
+            display: flex;
+            align-items: baseline;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .t-num {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--soul);
+        }
+
+        .t-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 900px) {
+
+            .grid-layout,
+            .header-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .header-meta-box {
+                border-left: none;
+                border-top: 1px solid #ddd;
+                padding-left: 0;
+                padding-top: 20px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .challenge-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="global-grid-bg"></div>
+    <div class="cursor-follower" id="cursor"></div>
+    <div class="cursor-dot" id="dot"></div>
+
+    <div class="project-container">
+
+        <!-- Navigation -->
+        <a href="index.html" class="back-nav">
+            <span style="color:var(--soul)">&lt;</span> RETURN TO MATRIX
+        </a>
+
+        <!-- 1. Header Area: Archival Style -->
+        <header class="header-grid">
+            <div class="header-main">
+                <h1 class="proj-title">JAXX<br>AI AGENT 2.0</h1>
+                <p class="proj-subtitle">AI Engine for Global Brands<br>消费品企业新品决策的数据思考者。</p>
+
+                <div class="header-tags" style="margin-top: 30px;">
+                    <span class="tag-pill">RaaS</span>
+                    <span class="tag-pill">AI Agent</span>
+                    <span class="tag-pill">Consumer Goods Insights</span>
+                </div>
+            </div>
+
+            <div class="header-meta-box">
+                <div class="meta-row">
+                    <span class="meta-label">YEAR</span>
+                    <span class="meta-value">2025</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">MY ROLE</span>
+                    <span class="meta-value">UX LEAD</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">STATUS</span>
+                    <span class="meta-value">Under development<span style="color:var(--soul); font-size: 15px;">
+                            .</span></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 2. Intro Section: Asymmetric Grid -->
+        <section class="grid-layout">
+            <div class="text-col">
+                <div class="section-label">01 / CONTEXT</div>
+                <p class="intro-lead">
+                    Jaxx 旨在超越传统的 AI 助手，成为企业中的重要智力资产。
+                </p>
+                <p>
+                    作为消费品企业做新品决策时的数据思考者、机会雷达和创新方法论导师，帮助消费品企业更快抓住乃至领先于市场和消费者的变化趋势，成为有“利润正义”的持续成功企业。
+                </p>
+                <p
+                    style="font-size: 13px; color: #888; border-top: 1px solid #ddd; padding-top: 15px; margin-top: 30px;">
+                    相比 1.0 版本，2.0 引入了 MAS 协作管理框架，共同构成了 Jaxx 作为 AI 创新搭档与第二大脑的核心价值。
+                </p>
+            </div>
+
+            <div class="visual-col">
+                <figure class="img-frame">
+                    <div class="img-placeholder" style="aspect-ratio: 16/9;" data-size="HI-RES RENDER">
+                        <img src="IMG/IMG-JAXX2.0.png" alt="JAXX 2.0 Interface">
+                    </div>
+                    <figcaption>
+                        <span>FIGURE 1.1: JAXX 2.0 START</span>
+                        <span>[UI_V2_FINAL]</span>
+                    </figcaption>
+                </figure>
+
+                <!-- 之前的对比图放在一起显得太乱，这里只放一张核心图，或者并排两张小的 -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <figure class="img-frame">
+                        <div class="img-placeholder" style="aspect-ratio: 16/9;" data-size="LEGACY">
+                            <img src="IMG/IMG-JAXX1.0.png" alt="Legacy Version">
+                        </div>
+                        <figcaption>V1.0 LEGACY</figcaption>
+                    </figure>
+                    <figure class="img-frame">
+                        <div class="img-placeholder" style="aspect-ratio: 16/9;" data-size="LEGACY">
+                            <img src="IMG/IMG-JAXX1.0-2.png" alt="Legacy Version">
+                        </div>
+                        <figcaption>V1.0 LEGACY</figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Challenge: Wide Layout -->
+        <section class="content-section">
+            <div class="section-label">02 / CHALLENGE & STRATEGY</div>
+
+            <div style="max-width: 800px; margin-bottom: 50px;">
+                <h3 style="font-size: 28px; margin-bottom: 20px;">当结果变得不可控<br>体验从哪里开始？</h3>
+                <p>RaaS（Result-as-a-Service）模式下，产品的核心产物不再是固定功能，而是生成式结果。传统的界面设计逻辑已无法应对这种动态性。</p>
+            </div>
+
+            <div class="challenge-wrapper">
+                <div class="ch-card">
+                    <span class="ch-tag">挑战</span>
+                    <div class="ch-title">AI 产品的可设计性正在被重新定义</div>
+                    <div class="ch-desc">
+                        RaaS（Result-as-a-Service）模式下，产品的核心产物不再是功能，而是结果。当输出由算法生成、非固定呈现时，传统的界面设计逻辑已无法应对。设计师必须思考：当过程不可控时，用户体验还从哪里开始？
+                    </div>
+                </div>
+                <div class="ch-card">
+                    <span class="ch-tag">原因</span>
+                    <div class="ch-title">传统产品逻辑已不适配生成式流程</div>
+                    <div class="ch-desc">在生成式AI时代，产品研发不再从功能出发，而是从结果反推交互。
+                        这意味着用户路径不再固定、系统状态不再线性、反馈节奏不再确定。
+                        因此，单纯优化界面或信息架构无法解决根本问题——
+                        真正的挑战在于：如何让用户在不确定的结果中建立信任与理解。</div>
+                </div>
+                <div class="ch-card">
+                    <span class="ch-tag">方法</span>
+                    <div class="ch-title">以用户旅程为主线，重构人机协作的逻辑</div>
+                    <div class="ch-desc">我们从User Journey出发，明确AI与用户在每一环节中的角色关系：
+                        何时由人主导、何时AI接管、何时需要相互确认。
+                        并与市场科学与Agent团队深度对齐，让交互逻辑与模型逻辑互为支撑。
+                        最终形成一套以理解为中心的人机协作框架，为后续可视化与产品实现奠定结构基础。</div>
+                </div>
+            </div>
+
+            <!-- Flowchart 单独宽屏展示，增加气势 -->
+            <figure class="img-frame" style="margin-top: 40px; padding: 1%; height: auto; background: #fff;">
+                <div class="img-placeholder"
+                    style="height: auto; aspect-ratio: 21/9; background: transparent; border: none;"
+                    data-size="SVG DIAGRAM">
+                    <img src="IMG/JAXX-FLOW.svg" alt="JAXX Logic Flow">
+                </div>
+                <figcaption>FIGURE 2.1: User Flow</figcaption>
+            </figure>
+        </section>
+
+        <!-- 4. System: Split Grid (Left Text/Timeline, Right Images) -->
+        <section class="grid-layout" style="grid-template-columns: 55% 1fr; gap: 4fr;">
+            <div class="text-col">
+                <div class="section-label">03 / From Journey to System</div>
+                <h3>让交互逻辑可被构建</h3>
+                <p style="margin-bottom: 80px;">在定义人机协作逻辑后，我们需要让这些动态关系在产品中可被构建与复用。我采用自底向上的方式，将交互触点映射为组件。</p>
+
+                <div class="system-timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-header">
+                            <span class="t-num">01</span>
+                            <span class="t-title">PURPOSE</span>
+                        </div>
+                        <p style="font-size: 13px; margin-bottom: 10px;">在定义人机协作逻辑后，我们需要让这些动态关系在产品中可被构建与复用。
+                            因此我从用户旅程出发，将所有交互触点与系统响应映射为组件层面的结构单元。
+                            目标是让AI交互不仅能被体验，还能被工程化。</p>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-header">
+                            <span class="t-num">02</span>
+                            <span class="t-title">PATTERN</span>
+                        </div>
+                        <p style="font-size: 13px;">以用户旅程为轴线，我梳理了每个阶段的核心动作、触发条件与系统响应：
+                            交互类型：操作式 / 响应式
+                            交互意图：输入、确认、修正、追问、回顾
+                            总结对应的组件模式（Component Pattern），并建立在UI层面的映射关系
+                            最终形成了一个以交互意图为索引的组件库，使AI交互具备更高的灵活性与通用性。</p>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-header">
+                            <span class="t-num">03</span>
+                            <span class="t-title">BUILD</span>
+                        </div>
+                        <p style="font-size: 13px; margin-bottom: 2px;">在设计上，我将组件分为两大类：</p>
+                        <p style="font-size: 13px; margin-bottom: 2px;">
+                            <strong>反馈类</strong>：用于呈现AI的输出状态与解释信号，如消息块、提示框、分析卡片等。
+                        </p>
+                        <p style="font-size: 13px; margin-bottom: 2px;">
+                            <strong>操作类</strong>：用于引导或承接用户输入，如参数面板、确认区域、修正节点等。
+                        </p>
+                        <p style="font-size: 13px; margin-bottom: 2px;">在可行范围内优先采用市场成熟方案，确保开发效率与交互一致性；</p>
+                        <p style="font-size: 13px; margin-bottom: 2px;">当业务需求超出通用模型时，再定制业务组件，以最小代价实现最大的结构适配。</p>
+                        <p style="font-size: 13px; margin-bottom: 120px;">在可行范围内优先采用市场成熟方案，确保开发效率与交互一致性；</p>
+                        <p style="font-size: 15px; color: #999 ; font-weight: 600; margin-bottom: 2px;">
+                            这种自底向上的结构化方式，让RaaS产品的交互逻辑具备可扩展性与演化空间，为后续视觉系统与生成式交互的整合奠定了稳定基础。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visual-col">
+                <!-- 右侧放系统图，垂直排列 -->
+                <figure class="img-frame" style="margin-top: 100px;">
+                    <div class="img-placeholder" style="align-content: center;" data-size="SYSTEM MAP">
+                        <img src="IMG/JAXX-chapter1.png" alt="System Structure">
+                    </div>
+                    <figcaption>COMPONENT MAPPING</figcaption>
+                </figure>
+
+                <figure class="img-frame">
+                    <div class="img-placeholder" style="aspect-ratio: 16/9;" data-size="UI PATTERNS">
+                        <img src="IMG/JAXX-chapter2.png" alt="UI Components">
+                    </div>
+                    <figcaption>INTERACTION PATTERNS</figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <!-- 5. UX Framework: Schematic View -->
+        <section class="content-section">
+            <div class="section-label">04 / UX Framework:Structuring AI Interaction Spaces</div>
+
+            <!-- 使用边框框起来，像一张技术图纸 -->
+            <div style="border: 2px solid var(--structure); padding: 5px;">
+                <div style="background: var(--bg-color); border: 1px solid var(--structure); padding: 40px;">
+
+                    <div class="grid-layout" style="margin-bottom: 0; gap: 2fr; grid-template-columns: 5fr 1fr;">
+                        <div class="text-col">
+                            <h3 style="margin-top: 0; width: 60%;">让复杂的人机协作过程可被观察、定位与扩展</h3>
+                            <p style=" margin-bottom: 2px; font-weight: 500;">
+                                <strong style="color:var(--soul)">[A]</strong> 从线性对话到空间化交互
+                            </p>
+                            <p style="font-size: 13px; color: #888;">传统的 AI
+                                对话系统以时间顺序为主线，用户很难在持续演化的对话中「回看」「定位」或「分支探索」。
+                                在本项目中，针对RaaS产品的特性，我构建了一个空间化的 UX 框架：
+                                将整个用户旅程拆解为可视化的「流程卡片」，并以三栏结构组织信息与操作，使人机交互不再只是对话，而是一场被结构化、可追溯的协作过程。</p>
+                        </div>
+
+                        <div class="visual-col">
+                            <div class="img-placeholder"
+                                style="background:#fff; width: 120px; border:none; aspect-ratio: 16/9;">
+                                <img src="IMG/UXFramework1.svg">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="grid-layout" style="margin-bottom: 0; gap: 2fr; grid-template-columns: 5fr 1fr;">
+                        <div class="text-col">
+                            <p style=" margin-bottom: 2px; font-weight: 500;">
+                                <strong style="color:var(--soul)">[B]</strong> 三面板交互布局
+                            </p>
+                            <p style="font-size: 13px; color: #888; margin-bottom: 2px;">该框架整体由三部分组成：</p>
+                            <p style="font-size: 13px; color: #888; margin-bottom: 2px;">- 左栏:导航与任务结构（Navigation & Task
+                                Tree）
+                                用于展示最近任务与菜单切换，帮助用户快速在多个任务或菜单之间间跳转。</p>
+                            <p style="font-size: 13px; color: #888; margin-bottom: 2px;">- 中栏:内容与流程卡片区（Interaction
+                                Canvas）
+                                每个卡片代表一个大流程，内部承载对话记录、子流程与AI响应，通过视觉分层让用户清晰定位当前阶段与AI反馈上下文。</p>
+                            <p style="font-size: 13px; color: #888;">- 右栏:文件沙盒（File Sandbox）
+                                用于集中展示AI生成或用户上传的文件，可直接查看、下载或复用。</p>
+                        </div>
+
+                        <div class="visual-col">
+                        </div>
+                    </div>
+
+
+                    <div class="grid-layout" style="margin-bottom: 0; gap: 2fr; grid-template-columns: 5fr 1fr;">
+                        <div class="text-col">
+                            <p style=" margin-bottom: 2px; font-weight: 500;">
+                                <strong style="color:var(--soul)">[TIP]</strong> 这种「三栏+卡片」结构让生成式流程在空间维度上获得可视化表达，
+                                同时具备未来支持分支探索（branch tasks）与上下文回溯（context tracking）的可拓展性。
+                            </p>
+                            <div class="visual-col">
+                            </div>
+                        </div>
+
+
+
+                    </div>
+                </div>
+
+                <!-- 展示实际界面 -->
+
+                <figure class="img-frame">
+                    <div class="img-placeholder" style="height: 100%; min-height: 200px;">
+                        <img src="IMG/jaxx-c.png" alt="JAXX Component">
+                    </div>
+                </figure>
+
+        </section>
+
+        <!-- 6. Innovation: Final Highlight -->
+        <section class="grid-layout" style="margin-bottom: 60px; grid-template-columns: 3fr 1fr;">
+            <div class="text-col">
+                <div class="section-label">05 / MICRO INNOVATION</div>
+                <h3>结构化输入的对话交互</h3>
+                <p>在框架中，我针对内容区的AI反馈部分进行了结构化重构。
+                    在需要的时候，AI的输出不再是纯文本，而是带有可编辑输入区的可交互模块。与此同时，在对话框（chatbox）中，我引入了chip化结构化输入模型：结构化数据以文字化的Chip展示。</p>
+                <p>这种方式不仅提升了交互效率和反馈清晰度，更重要的是，它帮助用户可视化地理解 AI 的思维结构
+                    看到系统如何解析问题、组织参数、生成结论。</p>
+                <p>在这样的交互中，用户不再只是操作 AI，而是在学习 AI 的思考路径。他们逐渐能够将这种“结构化思维”迁移到新的任务中，把与智能的协作，转化为对自身认知的增强。</p>
+
+
+
+            </div>
+            <table class="chip-table" style="margin-top: 30px;">
+                <tr>
+                    <th width="40%">Type</th>
+                    <th>Mapping</th>
+                </tr>
+                <tr>
+                    <td><b>General</b></td>
+                    <td>Key-Value Binding</td>
+                </tr>
+                <tr>
+                    <td><b>Multi</b></td>
+                    <td>Tags / Checkbox</td>
+                </tr>
+                <tr>
+                    <td><b>File</b></td>
+                    <td>File Preview ID</td>
+                </tr>
+            </table>
+
+        </section>
+        <div class="visual-col">
+            <figure class="img-frame">
+                <div class="img-placeholder" style="height: auto;">
+                    <img src="IMG/compent-JAXX.png" alt="Structured Input Component">
+                </div>
+                <figcaption>INPUT COMPONENT LOGIC</figcaption>
+            </figure>
+        </div>
+        <div class="t-num" style="color: #c9c9c9; font-size: 12px; margin-top: 10px;">专利申请号：2025224046566
+            <p>该方案显著提升了数据输入效率与准确性、增强了灵活性与可视化反馈，
+                并扩展了AI在专业领域的应用边界。</p>
+        </div>
+
+        <!-- Footer / Quote -->
+        <div class="quote-box">
+            <div class="quote-text">
+                "The new goal of UX is not just to augment human intellect, but to augment human existence."
+                <P> UX 的目标不再只是增强人的智力，而是扩展人的存在。</P>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px;">
+                <span class="quote-author">— Jakob Nielsen</span>
+                <span style="font-family: var(--font-mono); font-size: 12px; opacity: 0.5;">END OF ARCHIVE</span>
+            </div>
+        </div>
+
+        <footer
+            style="margin-top: 60px; padding-top: 40px; border-top: 1px dashed #ccc; display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12px; color: #888;">
+            <span>© 2025 JAXX AGENT PROJECT</span>
+            <span>END OF ARCHIVE</span>
+        </footer>
+
+    </div> <!-- End Project Container -->
+
+    <script>
+        // Cursor Logic (Preserved)
+        const cursor = document.getElementById('cursor');
+        const dot = document.getElementById('dot');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+        });
+
+        document.querySelectorAll('a, .ch-card, figure').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.style.width = '60px';
+                cursor.style.height = '60px';
+                cursor.style.backgroundColor = 'rgba(255, 123, 56, 0.1)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.style.width = '40px';
+                cursor.style.height = '40px';
+                cursor.style.backgroundColor = 'transparent';
+            });
+        });
+    </script>
+</body>
+
+</html>

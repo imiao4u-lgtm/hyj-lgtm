@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UX_RESUME_2026_HYJ</title>
+    <!-- 引入 JetBrains Mono 字体 -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Noto+Sans+SC:wght@300;400;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ==================== 
+           DCP DESIGN SYSTEM v3.1 (FIXED)
+           ==================== */
+        :root {
+            --bg-color: #F8F8F8;
+            --structure: #0A0A0A;
+            --soul: #FF7B38;
+            --grid-color: rgba(138, 138, 138, 0.05);
+            --font-mono:
+                'JetBrains Mono',
+                'Noto Sans SC',
+                'PingFang SC',
+                'Microsoft YaHei',
+                'SimHei',
+                monospace;
+            --font-main: 'Noto Sans SC', sans-serif;
+        }
+
+        /* 基础 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            cursor: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--structure);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            width: 100%;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /*全局网格背景 */
+        .bg-grid {
+            position: relative;
+        }
+
+        /* 如果希望背景贯穿全屏 */
+        .global-grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* 统一的页面容器类 .page */
+        .page {
+            max-width: 1200px;
+            min-height: 100vh;
+            /* 确保每一页至少占满一屏 */
+            margin: 0 auto;
+            padding: 80px 40px;
+            position: relative;
+            display: flex;
+            /* 开启Flex布局 */
+            flex-direction: column;
+            justify-content: center;
+            /* 内容垂直居中 */
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+            /* 页面分隔线 */
+        }
+
+        /* ==================== 
+           INTERACTION: CUSTOM CURSOR 
+           ==================== */
+        .cursor-follower {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--structure);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: width 0.3s, height 0.3s, background 0.3s;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-follower::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 1px;
+            background: var(--structure);
+        }
+
+        .cursor-follower::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 1px;
+            height: 100%;
+            background: var(--structure);
+        }
+
+        .cursor-dot {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: var(--soul);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10000;
+        }
+
+        .hover-active .cursor-follower {
+            width: 60px;
+            height: 60px;
+            border-color: var(--soul);
+            background: rgba(255, 123, 56, 0.05);
+        }
+
+        /* 动画类 */
+        .hidden-trigger {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .show-trigger {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ==================== 
+           通用组件样式 (Section Titles)
+           ==================== */
+        .section-header,
+        .section-title {
+            /* 1. 强制宽度为视口宽度，无视父容器 */
+            width: 100vw;
+
+            /* 2. 使用负 margin 将元素拉回屏幕中心，实现"突破"效果 */
+            margin-left: calc(50% - 50vw);
+            margin-right: calc(50% - 50vw);
+
+            /* 3. 智能内边距：
+               这一步非常关键！为了让标题文字（ABOUT ME）依然和下方的内容对齐，
+               我们需要动态计算 padding-left。
+               公式含义：(屏幕宽 - 内容宽1200) / 2 + 原本的内边距40
+               max() 函数保证在小屏幕下至少保留 40px 边距。
+            */
+            padding-left: max(40px, calc((100vw - 1200px) / 2 + 40px));
+            padding-right: 40px;
+
+            /* 样式设定 */
+            font-family: var(--font-mono);
+            font-size: 14px;
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+
+            /* 线条现在会贯穿整个屏幕 */
+            border-bottom: 1px solid var(--structure);
+            padding-bottom: 15px;
+
+            /* 确保背景不透明，防止遮挡问题 */
+            box-sizing: border-box;
+        }
+
+
+        .header-square,
+        .soul-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--soul);
+            margin-right: 15px;
+            box-shadow: 0 0 10px var(--soul);
+        }
+
+        .gap-20 {
+            margin-bottom: 20px;
+        }
+
+        .gap-10 {
+            margin-bottom: 10px;
+        }
+
+        .gap-5 {
+            margin-bottom: 5px;
+        }
+
+        /* ==================== 
+           PAGE 1: COVER
+           ==================== */
+        .cover-section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background-color: #F8F8F8;
+        }
+
+        .cover-hud-frame {
+            width: 80%;
+            height: 80%;
+            border: 1px solid var(--structure);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+        }
+
+        .hud-corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--structure);
+        }
+
+        .hc-tl {
+            top: -1px;
+            left: -1px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .hc-tr {
+            top: -1px;
+            right: -1px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .hc-bl {
+            bottom: -1px;
+            left: -1px;
+            border-right: none;
+            border-top: none;
+        }
+
+        .hc-br {
+            bottom: -1px;
+            right: -1px;
+            border-left: none;
+            border-top: none;
+        }
+
+        .cover-meta-top,
+        .cover-meta-bottom {
+            position: absolute;
+            width: 90%;
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-gray);
+        }
+
+        .cover-meta-top {
+            top: 20px;
+        }
+
+        .cover-meta-bottom {
+            bottom: 20px;
+            border-top: 1px dashed #ccc;
+            padding-top: 10px;
+        }
+
+        /* 强制两侧平分空间，使中间字段绝对居中 */
+        .cover-meta-top>span:first-child,
+        .cover-meta-bottom>span:first-child {
+            flex: 1;
+            text-align: left;
+        }
+
+        .cover-meta-top>span:last-child,
+        .cover-meta-bottom>span:last-child {
+            flex: 1;
+            text-align: right;
+        }
+
+        .cover-main {
+            text-align: center;
+            z-index: 2;
+        }
+
+        .role-tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            letter-spacing: 2px;
+            color: var(--soul);
+            border: 1px solid var(--soul);
+            padding: 4px 12px;
+            margin-bottom: 20px;
+        }
+
+        .RMname-en {
+            font-family: var(--font-mono);
+            font-size: 60px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 20px;
+        }
+
+        .RMname-cn {
+            font-size: 20px;
+            font-weight: 200;
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+        }
+
+        .status-light {
+            width: 8px;
+            height: 8px;
+            background: var(--soul);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* ==================== 
+           PAGE 2: ABOUT ME 
+           ==================== */
+        .avatar-section {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0 60px;
+
+        }
+
+        .avatar-strip {
+            display: flex;
+            justify-content: center;
+            width: 100vw;
+            margin-left: calc(50% - 50vw);
+            margin-right: calc(50% - 50vw);
+            margin-bottom: 40px;
+            padding-top: 20px;
+            background-color: #fff;
+            border: 1px solid var(--border-light);
+        }
+
+        .avatar-container {
+            position: relative;
+
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.5s;
+        }
+
+        .avatar-container:hover .avatar-img {
+            filter: grayscale(0);
+        }
+
+        .bracket {
+            position: absolute;
+            width: 20px;
+            height: 100%;
+            fill: none;
+            stroke: var(--structure);
+            stroke-width: 2;
+            top: 0;
+        }
+
+        .bracket-left {
+            left: -30px;
+        }
+
+        .bracket-right {
+            right: -30px;
+        }
+
+        .profile-info {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .profile-name {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 350;
+        }
+
+        .profile-meta {
+            font-family: var(--font-mono);
+            color: #666;
+            line-height: 1.8;
+            font-size: 12px;
+        }
+
+        .philo-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+
+        }
+
+        .philo-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 30px;
+            transition: transform 0.3s;
+            position: relative;
+        }
+
+        .philo-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--soul);
+        }
+
+        .philo-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 15px 15px 0 0;
+            border-color: var(--structure) transparent transparent transparent;
+        }
+
+        .pc-num {
+            font-family: var(--font-mono);
+            color: var(--soul);
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .pc-title {
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .pc-desc {
+            font-size: 13px;
+            color: #666;
+            text-align: justify;
+            line-height: 1.6;
+        }
+
+        /* ==================== 
+           PAGE 3: PROJECT INTRO (补全)
+           ==================== */
+        .project-cover-layout {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 600px;
+            width: 100%;
+        }
+
+        .proj-deco-text {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 5px;
+            color: #ccc;
+            height: 100%;
+            text-align: center;
+            width: 40px;
+            border-left: 1px dashed #ddd;
+        }
+
+        .proj-img-container {
+            flex: 1;
+            height: 100%;
+            margin: 0 40px;
+            position: relative;
+            background: #fff;
+            border: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .proj-img-placeholder {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+        }
+
+        .hud-line {
+            position: absolute;
+            background: var(--soul);
+            opacity: 0.5;
+        }
+
+        .hud-line-h {
+            width: 100%;
+            height: 1px;
+            top: 50%;
+            left: 0;
+        }
+
+        .hud-line-v {
+            height: 100%;
+            width: 1px;
+            left: 50%;
+            top: 0;
+        }
+
+        .hud-label {
+            position: absolute;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            background: var(--structure);
+            color: #fff;
+            padding: 2px 4px;
+        }
+
+        .hl-1 {
+            top: 10px;
+            left: 10px;
+        }
+
+        .hl-2 {
+            bottom: 10px;
+            right: 10px;
+        }
+
+        .proj-title-area {
+            width: 300px;
+            padding-left: 40px;
+            border-left: 1px solid var(--structure);
+        }
+
+        .proj-main-title {
+            font-size: 40px;
+            font-weight: 900;
+            line-height: 1;
+            margin: 20px 0;
+        }
+
+        .proj-sub-title {
+            font-family: var(--font-mono);
+            color: var(--soul);
+            font-size: 12px;
+            margin-bottom: 30px;
+        }
+
+        .proj-meta-list {
+            list-style: none;
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        .proj-meta-list li {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ==================== 
+           PAGE 4: TIMELINE (补全)
+           ==================== */
+        .timeline {
+            position: relative;
+            border-left: 1px solid var(--structure);
+            padding: 30px;
+            margin-left: 10px;
+            background-color: #fff;
+        }
+
+        .exp-item {
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .exp-item::before {
+            content: '';
+            position: absolute;
+            left: -37px;
+            top: 5px;
+            width: 9px;
+            height: 9px;
+            background: #fff;
+            border: 2px solid var(--soul);
+            transform: rotate(45deg);
+        }
+
+        .exp-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 5px;
+            align-items: baseline;
+        }
+
+        .exp-role {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .exp-company {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .exp-time {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--soul);
+        }
+
+        .exp-content {
+            font-size: 14px;
+            color: #444;
+            text-align: justify;
+            line-height: 1.8;
+        }
+
+        .w-400 {
+            padding-left: 25%;
+            padding-right: 5%;
+        }
+
+        /* ==================== 
+           PAGE 5: PROJECT MATRIX (补全)
+           ==================== */
+        .proj-grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .proj-card-frame {
+            border: 1px solid #ddd;
+            padding: 20px;
+            background: #fff;
+            transition: all 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .proj-card-frame:hover {
+            border-color: var(--structure);
+            box-shadow: 5px 5px 0 var(--soul);
+        }
+
+        /* 图片容器修改：固定高度或比例 */
+        .p-frame-img {
+            width: 100%;
+            height: 240px;
+            background: #f5f5f5;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+
+            /* 添加 opacity 和 transform 到过渡属性中 */
+            transition: height 0.6s cubic-bezier(0.7, 0, 0.3, 1),
+                margin 0.6s,
+                opacity 0.4s ease,
+                transform 0.6s ease;
+        }
+
+
+        /* 图片本身的修改：填充裁剪 */
+        .p-frame-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* 关键：保持比例并填充整个容器，多余裁剪 */
+            object-position: center;
+            /* 居中裁剪 */
+            display: block;
+            transition: transform 0.5s ease;
+        }
+
+        /* 鼠标悬停时的微小缩放效果 */
+        .proj-card-frame:hover .p-frame-img img {
+            transform: scale(1.05);
+        }
+
+        .p-frame-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+            transition: opacity 0.3s;
+        }
+
+        .p-frame-desc {
+            font-size: 12px;
+            font-family: var(--font-mono);
+            color: #888;
+            transition: opacity 0.3s;
+        }
+
+        /* ==================== 
+           TRANSITION: HERO EXPANSION (交互优化)
+           ==================== */
+        .page-transition-curtain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-color);
+            z-index: 99990;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .clone-card {
+            position: fixed;
+            z-index: 99991;
+            background: #fff;
+            border: 1px solid var(--structure);
+            transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1);
+            overflow: hidden;
+            transform-origin: center center;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        /* 
+           展开状态 (.expanding) 
+           当克隆的卡片全屏时，我们改变内部元素的样式
+        */
+        .clone-card.expanding .p-frame-img {
+            /* 关键：透明度变为0 */
+            opacity: 0;
+
+            /* 可选：稍微缩小一点，增加一种“后退消失”的空间感，比单纯消失更精致 */
+            transform: scale(0.95);
+
+            /* 既然看不见了，就不需要改变高度去撑满屏幕了，保持原高度或设为 auto 都可以 */
+            /* width/height 保持默认即可，因为父容器 clone-card 已经是白色背景并撑满全屏了 */
+        }
+
+        /* 同时确保里面的 img 也不要乱动 */
+        .clone-card.expanding .p-frame-img img {
+            /* 不需要做额外变换，随父容器消失即可 */
+            transform: scale(1);
+        }
+
+
+        /* 展开时：图片容器占满全屏 */
+        .clone-card.expanding .p-frame-img {
+            width: 100%;
+            height: 100%;
+            /* 图片高度变为100% */
+            margin-bottom: 0;
+        }
+
+        /* 展开时：图片复位缩放 */
+        .clone-card.expanding .p-frame-img img {
+            transform: scale(1);
+        }
+
+        /* 展开时：隐藏文字，避免割裂感 */
+        .clone-card.expanding .p-frame-title,
+        .clone-card.expanding .p-frame-desc {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+
+        .p-frame-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .p-frame-desc {
+            font-size: 12px;
+            font-family: var(--font-mono);
+            color: #888;
+        }
+
+        /* ==================== 
+           PAGE 6 & GALLERY
+           ==================== */
+        .visual-cover {
+            background: var(--structure);
+            color: #fff;
+            position: relative;
+        }
+
+        .visual-title-center {
+            text-align: center;
+            border: 2px solid #fff;
+            padding: 60px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 准星装饰 (补全) */
+        .crosshair {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+        }
+
+        .crosshair::before,
+        .crosshair::after {
+            content: '';
+            position: absolute;
+            background: #fff;
+        }
+
+        .ch-tl {
+            top: 20px;
+            left: 20px;
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+        }
+
+        .ch-tr {
+            top: 20px;
+            right: 20px;
+            border-top: 2px solid #fff;
+            border-right: 2px solid #fff;
+        }
+
+        .ch-bl {
+            bottom: 20px;
+            left: 20px;
+            border-bottom: 2px solid #fff;
+            border-left: 2px solid #fff;
+        }
+
+        .ch-br {
+            bottom: 20px;
+            right: 20px;
+            border-bottom: 2px solid #fff;
+            border-right: 2px solid #fff;
+        }
+
+        .gallery-frame {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #eee;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gallery-placeholder-text {
+            font-family: var(--font-mono);
+            color: #ccc;
+            border: 1px dashed #ccc;
+        }
+
+        .card-line {
+            background-color: #fff;
+            border: 1px solid #0A0A0A;
+            padding: 10px;
+            width: fit-content;
+            margin-bottom: 20px;
+        }
+
+
+
+        /* ==================== 
+   TRANSITION: HERO EXPANSION 
+   ==================== */
+        /* 覆盖层，用于遮挡跳转瞬间的白屏 */
+        .page-transition-curtain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-color);
+            z-index: 99990;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        /* 这是一个克隆的卡片，用于做动画 */
+        .clone-card {
+            position: fixed;
+            z-index: 99991;
+            background: #fff;
+            border: 1px solid var(--structure);
+            transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1);
+            overflow: hidden;
+            transform-origin: center center;
+        }
+
+        .clone-card.expanding {
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            border-color: transparent;
+        }
+
+        /* ==================== 
+           PASSWORD MODAL
+           ==================== */
+        .pwd-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .pwd-modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .pwd-box {
+            background: #fff;
+            border: 1px solid var(--structure);
+            padding: 40px;
+            text-align: center;
+            width: 300px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .pwd-modal-overlay.active .pwd-box {
+            transform: translateY(0);
+        }
+
+        .pwd-title {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .pwd-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            font-family: var(--font-mono);
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .pwd-input:focus {
+            border-color: var(--soul);
+        }
+
+        .pwd-btn {
+            background: var(--structure);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .pwd-btn:hover {
+            background: var(--soul);
+        }
+
+        .pwd-error {
+            color: red;
+            font-size: 10px;
+            font-family: var(--font-mono);
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* 邮箱链接样式 */
+        .profile-meta a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s, text-decoration 0.3s;
+        }
+
+        .profile-meta a:hover {
+            color: var(--soul);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 全局背景网格 -->
+    <div class="global-grid-bg"></div>
+
+    <!-- 交互光标 -->
+    <div class="cursor-follower" id="cursor" style="left: -100px; top: -100px;"></div>
+    <div class="cursor-dot" id="dot" style="left: -100px; top: -100px;"></div>
+
+    <!-- 密码验证弹窗 -->
+    <div class="pwd-modal-overlay" id="pwdModal">
+        <div class="pwd-box">
+            <div class="pwd-title">// SECURITY CHECK //</div>
+            <input type="password" class="pwd-input" id="pwdInput" placeholder="ACCESS CODE" maxlength="8">
+            <button class="pwd-btn" id="pwdBtn">UNLOCK</button>
+            <div class="pwd-error" id="pwdError">ACCESS DENIED</div>
+        </div>
+    </div>
+
+    <!-- PAGE 1: 封面 -->
+    <div class="cover-section hidden-trigger show-trigger">
+        <div class="cover-hud-frame interactable">
+            <div class="hud-corner hc-tl"></div>
+            <div class="hud-corner hc-tr"></div>
+            <div class="hud-corner hc-bl"></div>
+            <div class="hud-corner hc-br"></div>
+
+            <div class="cover-meta-top">
+                <span>SYS_VER: 3.1.0 (STABLE)</span>
+                <span>[ DCP_PROTOCOL ]</span>
+                <span>LOC: CN</span>
+            </div>
+
+            <div class="cover-main">
+                <div class="role-tag">UX / INTERACTION DESIGNER</div>
+                <!-- 鼠标悬停可看到随机文字效果 -->
+                <h1 class="RMname-en" data-scramble="true">UI/UX_RESUME_2026</h1>
+                <div class="RMname-cn">用户界面/交互设计师</div>
+                <div style="font-family: var(--font-mono); font-size: 10px; padding-right: 10px;">
+                    YONGJUN HUANG | SYSTEM ONLINE <span class="status-light"></span>
+                </div>
+            </div>
+
+            <div class="cover-meta-bottom">
+                <span>VIEWPORT: RESPONSIVE</span>
+                <span style="letter-spacing: 3px;">/// PIXEL PERFECT ///</span>
+                <span>FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 2: 关于我 (修复布局) -->
+    <div class="page hidden-trigger">
+        <div class="section-header">
+            <div class="header-square"></div>
+            ABOUT ME // IDENTITY_CORE
+        </div>
+
+        <div class="avatar-strip interactable">
+            <div class="avatar-container">
+
+
+                <!-- [IMG] 替换图片 -->
+                <img src="IMG/avatar.png" alt="Profile" class="avatar-img">
+
+
+            </div>
+        </div>
+
+        <div class="profile-info">
+            <h2 class="profile-name">黄咏君</h2>
+            <div class="profile-meta">
+                <a href="mailto:Huangyj28@hotmail.com">Huangyj28@hotmail.com</a><br>
+                10年工作经验 | UX/交互设计师 | 统招本科
+            </div>
+        </div>
+
+        <div class="philo-container">
+            <div class="philo-card interactable">
+                <span class="pc-num">01.</span>
+                <h3 class="pc-title">「视觉为表，秩序为里」</h3>
+                <p class="pc-desc">从视觉表现起步，在B端金融领域深耕。我理解了设计不仅是解决美感，更是对跨系统信息的深度降维，将复杂流程转化为清晰、可执行的逻辑路径。</p>
+            </div>
+            <div class="philo-card interactable">
+                <span class="pc-num">02.</span>
+                <h3 class="pc-title">「以可见逻辑切割复杂」</h3>
+                <p class="pc-desc">设计不在于减少步骤，而在于拆解算法的决策路径。让非线性的系统过程变得直观，使用户对智能的每一步推演都有掌控感。</p>
+            </div>
+            <div class="philo-card interactable">
+                <span class="pc-num">03.</span>
+                <h3 class="pc-title">「构建智能的解释机制」</h3>
+                <p class="pc-desc">从“操作引导”转向“辅助理解”。我通过信号系统与表达框架，将AI输出的不确定性转化为可信赖的反馈，在生成式交互中建立信任。</p>
+            </div>
+            <div class="philo-card interactable">
+                <span class="pc-num">04.</span>
+                <h3 class="pc-title">「Design for AI ：人机认知的翻译层」</h3>
+                <p class="pc-desc">AI时代的本质是认知的转译。设计不再只是构建界面，而是作为算法意图的翻译官，在智能的不确定性中，为人类捕捉方向与反馈。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 4: 履历 -->
+    <div class="page hidden-trigger">
+        <div class="section-title"><span class="soul-dot"></span>WORK EXPERIENCE</div>
+
+        <div class="timeline">
+            <div class="exp-item interactable">
+                <div class="exp-header">
+                    <div>
+                        <span class="exp-role">设计负责人</span>
+                        <span class="exp-company"> | LynxAI</span>
+                    </div>
+                    <span class="exp-time">2025.02 - PRESENT</span>
+                </div>
+                <div class="exp-content w-400 gap-5">
+                    1. 构建交互框架 </div>
+                <div class="exp-content w-400 gap-20" style="color: #888;">
+                    主导 RaaS（Result-as-a-Service）AI
+                    产品的信息架构与交互框架设计，兼顾可拓展性、操作性与可读性。该架构成为团队稳定产品逻辑与用户感知的核心支点，并为后续功能模块提供统一结构基础。
+                </div>
+                <div class="exp-content w-400 gap-5">
+                    2. 定义内容表达</div>
+                <div class="exp-content w-400 gap-20" style="color: #888;">
+                    负责工作流程部分呈现逻辑，系统梳理RaaS产品场景下的关键用户体验挑战（可信度、解释性、用户主导权、可发现性），从视觉结构入手，提升内容的可读性、解释性与用户理解度。
+                </div>
+                <div class="exp-content w-400 gap-5">
+                    3. 沉淀可视化工作流
+                </div>
+                <div class="exp-content w-400 gap-20" style="color: #888;">
+                    负责内容可视化的端到端逻辑，建立稳定的内容可视化工作流与 Prompt ，确保 AI 产出不仅能生成，在复杂场景下也能保持产出的稳定性，也更容易被理解与使用。
+                </div>
+                <div class="exp-content w-400 gap-5">
+                    4. 推动视觉升级
+                </div>
+                <div class="exp-content w-400 gap-20" style="color: #888;">
+                    主导新版产品视觉体系建设，从风格定义到界面落地全流程推进，统一视觉语言并获得团队广泛认可。用高质量成果建立团队信任，确立了视觉主导角色，并为后续资源配置与招聘争取战略支持。
+                </div>
+            </div>
+
+            <div class="exp-item interactable">
+                <div class="exp-header">
+                    <div>
+                        <span class="exp-role">设计师</span>
+                        <span class="exp-company"> | Employed by multiple companies, such as fintech and SaaS tools.
+                        </span>
+                    </div>
+                    <span class="exp-time">2023.03 - 2024.12</span>
+                </div>
+                <div class="exp-content w-400" style="color: #888;">
+                    负责产品UX/UI全案设计（含交互/视觉/动效）。<br>
+                    搭建设计系统与规范，统一多端体验并提升团队效能。<br>
+                    协同跨部门团队推动上线，确保设计落地与像素级还原。
+
+                </div>
+            </div>
+
+            <div class="exp-item interactable">
+                <div class="exp-header">
+                    <div>
+                        <span class="exp-role">交互设计师</span>
+                        <span class="exp-company"> | 联易融数字科技集团 (HK:09959)</span>
+                    </div>
+                    <span class="exp-time">2021.03 - 2023.02</span>
+                </div>
+                <div class="exp-content w-400 gap-5">
+                    1. 主导多个复杂B端系统的交互设计，支撑高复杂性业务流程。 </div>
+                <div class="exp-content w-400 gap-20" style="color: #888;">
+                    主导多个核心金融产品的交互设计，包括票据、仓单、垂类SaaS工具、AI中台等场景，构建支持多角色、多任务链、多端协作的交互模型。深入解析流程制度、信息密度与用户意图的非线性交织，形成高复杂度系统的可扩展设计逻辑。
+
+                </div>
+                <div class="exp-content w-400 gap-5">
+                    2. 参与用研与产品策略，梳理典型业务路径与交互范式，协助形成流程闭环与系统体验优化方案。
+                </div>
+                <div class="exp-content w-400 gap-20" style="color: #888;">
+                    在高度制度化与跨系统环境下，深入挖掘业务痛点与用户行为特征，推动结构化建模与场景还原，有效支持产品在多端、多角色之间的流程闭环，提升业务流畅度。
+
+                </div>
+                <div class="exp-content w-400 gap-5">
+                    3.沉淀设计经验，推动复杂应用的设计标准与团队认知升级。
+
+                </div>
+                <div class="exp-content w-400 gap-20" style="color: #888;">
+                    持续输出设计方法总结与经验分享，在团队内部推动复杂应用中的信息组织、任务编排与多端协同的方法，提升整体设计产出效率与协同能力
+                </div>
+            </div>
+
+            <div class="exp-item interactable">
+                <div class="exp-header">
+                    <div>
+                        <span class="exp-role">UI/UE设计师</span>
+                        <span class="exp-company"> | 金蝶软件 (HK:00268)</span>
+                    </div>
+                    <span class="exp-time">2017.04 - 2021.02</span>
+                </div>
+                <div class="exp-content w-400" style="min-height: 20px;">
+                    1. 独立负责网页产品的交互设计与 UI 视觉落地，覆盖多条金融业务线。 </div>
+                <div class="exp-content w-400" style="color: #888;">
+                    熟悉产品各阶段的设计流程，能根据业务节奏与团队资源状况快速切换角色，自主完成从页面结构梳理到最终视觉呈现的全流程设计任务，具备从 0 到 1
+                    的完整设计能力。在多线并行的复杂环境中，持续输出高质量方案，为团队建立了高效、稳定的交付标准。
+
+                </div>
+                <div class="exp-content w-400" style="min-height: 20px;">
+                    2. 参与多类运营活动与推广设计，高标准完成视觉物料，能准确把控品牌调性与设计表现力。
+                </div>
+                <div class="exp-content w-400" style="color: #888;">
+                    在高压周期下保障交付质量，从界面到物料形成统一视觉语言。 在视觉风格与执行表现上持续获得业务与市场团队认可，强化了品牌一致性与传播效率。
+                </div>
+            </div>
+
+            <div class="exp-item interactable" style="margin-bottom: 0px;">
+                <div class="exp-header">
+                    <div>
+                        <span class="exp-role">视觉设计师</span>
+                        <span class="exp-company"> | 欢聚时代 (NASDAQ:JOYY)</span>
+                    </div>
+                    <span class="exp-time">2016.08 - 2017.04</span>
+                </div>
+                <div class="exp-content w-400 gap-5">
+                    在职业初期，快速适应大厂高标准视觉要求，积累了完整的移动端产品视觉设计经验与风格判断能力 </div>
+                <div class="exp-content w-400 gap-20" style="color: #888; ">
+                    负责虎牙信息K12部门教育系列移动端 App 的整体 UI 设计与主视觉输出，负责多个重点模块的界面风格与细节打磨。项目产品多次获得主流平台推荐（36氪、少数派、小米商店等），App 日活超公司 S
+                    线标准，团队获评“年度业务突破
+                    奖”、“年度优秀团队奖”
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div>
+
+    <!-- PAGE 5: 项目列表 -->
+    <div class="page hidden-trigger">
+        <div class="section-title"><span class="soul-dot"></span>SELECTED PROJECTS</div>
+        <div class="proj-grid-layout">
+            <!-- 项目 1: JAXX (使用真实图片) -->
+            <div class="proj-card-frame interactable" data-target="project-jaxx.html">
+                <div class="p-frame-img">
+                    <!-- 去掉了内联样式，交给 CSS 类控制 -->
+                    <img src="IMG/jaxx-cover.png" alt="cover">
+                </div>
+                <div class="p-frame-title">JAXX 产品创新雷达</div>
+                <div class="p-frame-desc">RaaS / AI Agent / 消费品洞察</div>
+            </div>
+            <!-- 项目 2: 占位图测试 -->
+            <div class="proj-card-frame interactable" data-target="project-finance.html">
+                <div class="p-frame-img">
+                    <!-- 使用 picsum 随机图作为演示，尺寸故意设为 1400x768 -->
+                    <img src="IMG/warehouse-cover.png" alt="cover">
+                </div>
+                <div class="p-frame-title">仓单融资项目</div>
+                <div class="p-frame-desc">B端 / 区块链 / 大宗商品融资</div>
+            </div>
+            <!-- 项目 3 -->
+            <div class="proj-card-frame interactable" data-target="project-loan.html">
+                <div class="p-frame-img">
+                    <img src="IMG/loan-cover.png" alt="cover">
+                </div>
+                <div class="p-frame-title">金蝶效贷改版</div>
+                <div class="p-frame-desc">B端工具 / Fintech / 体验优化</div>
+            </div>
+            <!-- 项目 4 -->
+            <div class="proj-card-frame interactable" data-target="project-speed.html">
+                <div class="p-frame-img">
+                    <img src="IMG/speed-cover.png" alt="cover">
+                </div>
+                <div class="p-frame-title">极速贴项目</div>
+                <div class="p-frame-desc">B端工具 / Fintech / 信任机制</div>
+            </div>
+        </div>
+    </div>
+    <!-- 转场遮罩 -->
+    <div class="page-transition-curtain"></div>
+
+    <!-- PAGE 6: 视觉封面 -->
+    <div class="page hidden-trigger visual-cover">
+        <!-- 准星装饰 -->
+        <div class="crosshair ch-tl"></div>
+        <div class="crosshair ch-tr"></div>
+        <div class="crosshair ch-bl"></div>
+        <div class="crosshair ch-br"></div>
+
+        <div style="text-align: center; z-index: 2;">
+            <div class="visual-title-center interactable">
+                <h2 style="font-size: 50px; letter-spacing: 5px; line-height: 1;">VISUAL<br>EXPLORATION</h2>
+            </div>
+            <p style="margin-top: 30px; font-family: var(--font-mono); font-size: 12px; opacity: 0.8;">
+                // AESTHETICS & EXPERIMENTS<br>
+                // Illustration / Brand / Sharing
+            </p>
+        </div>
+    </div>
+
+    <!-- PAGE 7: 视觉作品 -->
+    <div class="page hidden-trigger">
+        <div class="section-title"><span class="soul-dot"></span>GALLERY // OUTPUT</div>
+        <div class="card-line" style="padding-right: 100px;">
+            <p style="font-family: var(--font-mono);  color: var(--structure);">// BAND
+            <p>
+            <div class="exp-role" style="margin-left: 24px;">品牌</div>
+        </div>
+        <div class="gallery-frame interactable" style="margin-bottom: 20px; height: auto;">
+            <span class="gallery-placeholder-text"><img src="IMG/band01.png" alt="IMG"
+                    style="width: 100%; height: auto;"></span>
+        </div>
+        <div class="gallery-frame interactable" style="margin-bottom: 60px; height: auto;">
+            <span class="gallery-placeholder-text"><img src="IMG/band02.png" alt="IMG"
+                    style="width: 100%; height: auto; "></span>
+        </div>
+
+        <div class="card-line" style="padding-right: 60px;">
+            <p style="font-family: var(--font-mono);  color: var(--structure);">// ANCIENT STYLE DIGITAL PAINTING
+            <p>
+            <div class="exp-role" style="margin-left: 24px;">古法数绘</div>
+        </div>
+        <div class="gallery-frame interactable" style="margin-bottom: 60px; height: auto;">
+            <span class=" gallery-placeholder-text"><img src="IMG/ILL01.png" alt="img"
+                    style="width: 100%; height: auto;"></span>
+        </div>
+
+        <div class="card-line" style="padding-right: 100px;">
+            <p style="font-family: var(--font-mono);  color: var(--structure);">// VIBE PAINTING
+            <p>
+            <div class="exp-role" style="margin-left: 24px;">氛围绘画</div>
+        </div>
+        <div class="gallery-frame interactable" style="margin-bottom: 60px; height: auto;">
+            <span class=" gallery-placeholder-text "><img src=" IMG/ILL02.png" alt="img"
+                    style="width: 100%; height: auto;"></span>
+        </div>
+        <!--end-->
+        <footer
+            style="margin-top: 60px; padding-top: 40px; border-top: 1px dashed #ccc; display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12px; color: #888;">
+            <span>© 2026 PERSONAL RESUME</span>
+            <span>END OF ARCHIVE</span>
+        </footer>
+    </div>
+
+
+
+    <script>
+        // JS 逻辑保持不变，用于光标和动画
+        const cursor = document.getElementById('cursor');
+        const dot = document.getElementById('dot');
+
+        document.addEventListener('mousemove', (e) => {
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+            setTimeout(() => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            }, 40);
+        });
+
+        const interactables = document.querySelectorAll('.interactable');
+        interactables.forEach(el => {
+            el.addEventListener('mouseenter', () => document.body.classList.add('hover-active'));
+            el.addEventListener('mouseleave', () => document.body.classList.remove('hover-active'));
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show-trigger');
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.hidden-trigger').forEach((el) => observer.observe(el));
+
+        // 文字随机闪烁效果 (Scramble)
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        document.querySelectorAll('[data-scramble="true"]').forEach(element => {
+            element.addEventListener('mouseenter', event => {
+                let iteration = 0;
+                const originalText = event.target.innerText;
+                const interval = setInterval(() => {
+                    event.target.innerText = originalText
+                        .split("").map((letter, index) => {
+                            if (index < iteration) return originalText[index];
+                            return letters[Math.floor(Math.random() * 26)]
+                        }).join("");
+                    if (iteration >= originalText.length) clearInterval(interval);
+                    iteration += 1 / 3;
+                }, 30);
+            });
+        });
+        // ==================== 
+        // 通用卡片转场逻辑 (HERO TRANSITION)
+        // ==================== 
+        const cards = document.querySelectorAll('.proj-card-frame');
+        const curtain = document.querySelector('.page-transition-curtain');
+        const pwdModal = document.getElementById('pwdModal');
+        const pwdInput = document.getElementById('pwdInput');
+        const pwdBtn = document.getElementById('pwdBtn');
+        const pwdError = document.getElementById('pwdError');
+
+        // 不防小人
+        const encrypted = "MjAyNg==";
+        const ACCESS_KEY = atob(encrypted);
+
+        cards.forEach((card) => {
+            card.addEventListener('click', (e) => {
+                // 1. 获取该卡片的目标链接
+                const targetUrl = card.getAttribute('data-target');
+                // 2. 只有当定义了 data-target 时才执行
+                if (targetUrl) {
+                    e.preventDefault(); // 阻止立即跳转
+
+                    // 3. 检查是否有缓存的授权
+                    const isUnlocked = sessionStorage.getItem('project_access_unlocked');
+                    if (isUnlocked === 'true') {
+                        performTransition(card, targetUrl);
+                    } else {
+                        // 4. 显示密码弹窗
+                        pendingCard = card;
+                        pendingUrl = targetUrl;
+                        showPwdModal();
+                    }
+                }
+            });
+        });
+
+        // 弹窗逻辑
+        function showPwdModal() {
+            pwdModal.classList.add('active');
+            pwdInput.value = '';
+            pwdError.style.display = 'none';
+            setTimeout(() => pwdInput.focus(), 100);
+        }
+
+        function hidePwdModal() {
+            pwdModal.classList.remove('active');
+        }
+
+        function verifyPassword() {
+            const inputVal = pwdInput.value;
+            if (inputVal === ACCESS_KEY) {
+                // 密码正确
+                sessionStorage.setItem('project_access_unlocked', 'true');
+                hidePwdModal();
+                if (pendingCard && pendingUrl) {
+                    performTransition(pendingCard, pendingUrl);
+                }
+            } else {
+                // 密码错误
+                pwdError.style.display = 'block';
+                pwdInput.classList.add('shake'); // 可以加个抖动动画，这里先简化
+                setTimeout(() => pwdInput.classList.remove('shake'), 500);
+            }
+        }
+
+        // 绑定弹窗事件
+        pwdBtn.addEventListener('click', verifyPassword);
+        pwdInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') verifyPassword();
+            if (e.key === 'Escape') hidePwdModal();
+        });
+        pwdModal.addEventListener('click', (e) => {
+            if (e.target === pwdModal) hidePwdModal();
+        });
+        function performTransition(originalCard, targetUrl) {
+            // 获取位置
+            const rect = originalCard.getBoundingClientRect();
+            // 克隆卡片
+            const clone = originalCard.cloneNode(true);
+            clone.classList.add('clone-card');
+
+            // 设置初始位置（绝对重合）
+            clone.style.top = rect.top + 'px';
+            clone.style.left = rect.left + 'px';
+            clone.style.width = rect.width + 'px';
+            clone.style.height = rect.height + 'px';
+            clone.style.margin = '0'; // 清除可能存在的margin
+
+            document.body.appendChild(clone);
+            // 强制重绘
+            void clone.offsetWidth;
+            // 执行膨胀动画
+            clone.classList.add('expanding');
+
+            // 遮罩淡入（防止新页面加载瞬间的白屏闪烁）
+            setTimeout(() => {
+                curtain.style.opacity = '1';
+            }, 400);
+            // 跳转
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 600);
+        }
+
+        // 页面返回时的处理（浏览器后退按钮）
+        window.addEventListener('pageshow', (event) => {
+            // 只要回到这个页面，就重置遮罩和克隆卡片
+            curtain.style.opacity = '0';
+            const oldClones = document.querySelectorAll('.clone-card');
+            oldClones.forEach(el => el.remove());
+        });
+    </script>
+</body>
+
+</html>
