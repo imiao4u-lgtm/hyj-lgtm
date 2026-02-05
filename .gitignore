@@ -1,0 +1,13 @@
+# 源文件目录(未加密的原始文件)
+scr/
+
+# 如果你不想把密码配置文件提交到 GitHub
+staticrypt.json
+
+# Node.js
+node_modules/
+package-lock.json
+
+# 系统文件
+.DS_Store
+Thumbs.db

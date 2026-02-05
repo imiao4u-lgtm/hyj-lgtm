@@ -1069,16 +1069,6 @@
     <div class="cursor-follower" id="cursor" style="left: -100px; top: -100px;"></div>
     <div class="cursor-dot" id="dot" style="left: -100px; top: -100px;"></div>
 
-    <!-- 密码验证弹窗 -->
-    <div class="pwd-modal-overlay" id="pwdModal">
-        <div class="pwd-box">
-            <div class="pwd-title">// SECURITY CHECK //</div>
-            <input type="password" class="pwd-input" id="pwdInput" placeholder="ACCESS CODE" maxlength="8">
-            <button class="pwd-btn" id="pwdBtn">UNLOCK</button>
-            <div class="pwd-error" id="pwdError">ACCESS DENIED</div>
-        </div>
-    </div>
-
     <!-- PAGE 1: 封面 -->
     <div class="cover-section hidden-trigger show-trigger">
         <div class="cover-hud-frame interactable">
@@ -1444,70 +1434,55 @@
                 }, 30);
             });
         });
-        // ==================== 
-        // 通用卡片转场逻辑 (HERO TRANSITION)
-        // ==================== 
-        const cards = document.querySelectorAll('.proj-card-frame');
-        const curtain = document.querySelector('.page-transition-curtain');
-        const pwdModal = document.getElementById('pwdModal');
-        const pwdInput = document.getElementById('pwdInput');
-        const pwdBtn = document.getElementById('pwdBtn');
-        const pwdError = document.getElementById('pwdError');
 
-        // 不防小人
-        const encrypted = "MjAyNg==";
-        const ACCESS_KEY = atob(encrypted);
 
         cards.forEach((card) => {
             card.addEventListener('click', (e) => {
-                // 1. 获取该卡片的目标链接
                 const targetUrl = card.getAttribute('data-target');
-                // 2. 只有当定义了 data-target 时才执行
                 if (targetUrl) {
-                    e.preventDefault(); // 阻止立即跳转
-
-                    // 3. 检查是否有缓存的授权
-                    const isUnlocked = sessionStorage.getItem('project_access_unlocked');
-                    if (isUnlocked === 'true') {
-                        performTransition(card, targetUrl);
-                    } else {
-                        // 4. 显示密码弹窗
-                        pendingCard = card;
-                        pendingUrl = targetUrl;
-                        showPwdModal();
-                    }
+                    e.preventDefault();
+                    // 直接跳转到加密页面,让 staticrypt 处理密码验证
+                    performTransition(card, targetUrl);
                 }
             });
         });
 
-        // 弹窗逻辑
-        function showPwdModal() {
-            pwdModal.classList.add('active');
-            pwdInput.value = '';
-            pwdError.style.display = 'none';
-            setTimeout(() => pwdInput.focus(), 100);
-        }
+        //跳转逻辑
+        const cards = document.querySelectorAll('.proj-card-frame');
+        const curtain = document.querySelector('.page-transition-curtain');
 
-        function hidePwdModal() {
-            pwdModal.classList.remove('active');
-        }
-
-        function verifyPassword() {
-            const inputVal = pwdInput.value;
-            if (inputVal === ACCESS_KEY) {
-                // 密码正确
-                sessionStorage.setItem('project_access_unlocked', 'true');
-                hidePwdModal();
-                if (pendingCard && pendingUrl) {
-                    performTransition(pendingCard, pendingUrl);
+        cards.forEach((card) => {
+            card.addEventListener('click', (e) => {
+                const targetUrl = card.getAttribute('data-target');
+                if (targetUrl) {
+                    e.preventDefault();
+                    performTransition(card, targetUrl);
                 }
-            } else {
-                // 密码错误
-                pwdError.style.display = 'block';
-                pwdInput.classList.add('shake'); // 可以加个抖动动画，这里先简化
-                setTimeout(() => pwdInput.classList.remove('shake'), 500);
-            }
+            });
+        });
+        function performTransition(originalCard, targetUrl) {
+            const rect = originalCard.getBoundingClientRect();
+            const clone = originalCard.cloneNode(true);
+            clone.classList.add('clone-card');
+
+            clone.style.top = rect.top + 'px';
+            clone.style.left = rect.left + 'px';
+            clone.style.width = rect.width + 'px';
+            clone.style.height = rect.height + 'px';
+            clone.style.margin = '0';
+
+            document.body.appendChild(clone);
+            void clone.offsetWidth;
+            clone.classList.add('expanding');
+
+            curtain.style.opacity = '1';
+            curtain.style.pointerEvents = 'auto';
+
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 600);
         }
+
 
         // 绑定弹窗事件
         pwdBtn.addEventListener('click', verifyPassword);
