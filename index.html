@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 
 <head>
@@ -958,92 +958,7 @@
             border-color: transparent;
         }
 
-        /* ==================== 
-           PASSWORD MODAL
-           ==================== */
-        .pwd-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(5px);
-            z-index: 99999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-
-        .pwd-modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .pwd-box {
-            background: #fff;
-            border: 1px solid var(--structure);
-            padding: 40px;
-            text-align: center;
-            width: 300px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transform: translateY(20px);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .pwd-modal-overlay.active .pwd-box {
-            transform: translateY(0);
-        }
-
-        .pwd-title {
-            font-family: var(--font-mono);
-            font-size: 14px;
-            margin-bottom: 20px;
-            letter-spacing: 1px;
-        }
-
-        .pwd-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            font-family: var(--font-mono);
-            font-size: 16px;
-            text-align: center;
-            letter-spacing: 5px;
-            margin-bottom: 20px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        .pwd-input:focus {
-            border-color: var(--soul);
-        }
-
-        .pwd-btn {
-            background: var(--structure);
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            font-family: var(--font-mono);
-            cursor: pointer;
-            width: 100%;
-            transition: background 0.3s;
-        }
-
-        .pwd-btn:hover {
-            background: var(--soul);
-        }
-
-        .pwd-error {
-            color: red;
-            font-size: 10px;
-            font-family: var(--font-mono);
-            margin-top: 10px;
-            display: none;
-        }
+        
 
         /* 邮箱链接样式 */
         .profile-meta a {
@@ -1436,17 +1351,6 @@
         });
 
 
-        cards.forEach((card) => {
-            card.addEventListener('click', (e) => {
-                const targetUrl = card.getAttribute('data-target');
-                if (targetUrl) {
-                    e.preventDefault();
-                    // 直接跳转到加密页面,让 staticrypt 处理密码验证
-                    performTransition(card, targetUrl);
-                }
-            });
-        });
-
         //跳转逻辑
         const cards = document.querySelectorAll('.proj-card-frame');
         const curtain = document.querySelector('.page-transition-curtain');
@@ -1484,44 +1388,6 @@
         }
 
 
-        // 绑定弹窗事件
-        pwdBtn.addEventListener('click', verifyPassword);
-        pwdInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') verifyPassword();
-            if (e.key === 'Escape') hidePwdModal();
-        });
-        pwdModal.addEventListener('click', (e) => {
-            if (e.target === pwdModal) hidePwdModal();
-        });
-        function performTransition(originalCard, targetUrl) {
-            // 获取位置
-            const rect = originalCard.getBoundingClientRect();
-            // 克隆卡片
-            const clone = originalCard.cloneNode(true);
-            clone.classList.add('clone-card');
-
-            // 设置初始位置（绝对重合）
-            clone.style.top = rect.top + 'px';
-            clone.style.left = rect.left + 'px';
-            clone.style.width = rect.width + 'px';
-            clone.style.height = rect.height + 'px';
-            clone.style.margin = '0'; // 清除可能存在的margin
-
-            document.body.appendChild(clone);
-            // 强制重绘
-            void clone.offsetWidth;
-            // 执行膨胀动画
-            clone.classList.add('expanding');
-
-            // 遮罩淡入（防止新页面加载瞬间的白屏闪烁）
-            setTimeout(() => {
-                curtain.style.opacity = '1';
-            }, 400);
-            // 跳转
-            setTimeout(() => {
-                window.location.href = targetUrl;
-            }, 600);
-        }
 
         // 页面返回时的处理（浏览器后退按钮）
         window.addEventListener('pageshow', (event) => {

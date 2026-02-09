@@ -1,0 +1,32 @@
+name: Deploy Encrypted Pages
+
+# 由于仓库是公开的,源文件不提交到 GitHub
+# 改为监听加密后的文件变化,直接部署
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'project-*.html'  # 只监听加密后的文件
+      - 'index.html'
+      - 'IMG/**'
+      - '*.css'
+      - '*.js'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          publish_branch: gh-pages
+          
+      - name: Deployment complete
+        run: echo "✅ 部署完成!"
