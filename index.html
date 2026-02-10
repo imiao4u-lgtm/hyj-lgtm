@@ -16,8 +16,7 @@
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
 
-        gtag('config', 'G-4YK0HDLQ0H');
-    </script>
+        gtag('config', 'G-4YK0HDLQ0H');    </script>
 
     <style>
         /* ==================== 
@@ -767,19 +766,6 @@
             transition: opacity 0.3s;
         }
 
-        .clone-card {
-            position: fixed;
-            z-index: 99991;
-            background: #fff;
-            border: 1px solid var(--structure);
-            transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1);
-            overflow: hidden;
-            transform-origin: center center;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-
         /* 
            展开状态 (.expanding) 
            当克隆的卡片全屏时，我们改变内部元素的样式
@@ -921,24 +907,6 @@
         }
 
 
-
-        /* ==================== 
-   TRANSITION: HERO EXPANSION 
-   ==================== */
-        /* 覆盖层，用于遮挡跳转瞬间的白屏 */
-        .page-transition-curtain {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: var(--bg-color);
-            z-index: 99990;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-
         /* 这是一个克隆的卡片，用于做动画 */
         .clone-card {
             position: fixed;
@@ -958,7 +926,7 @@
             border-color: transparent;
         }
 
-        
+
 
         /* 邮箱链接样式 */
         .profile-meta a {
@@ -971,11 +939,578 @@
             color: var(--soul);
             text-decoration: underline;
         }
+
+        /* ==================== 
+           SKELETON SCREEN
+           ==================== */
+        #skeleton-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-color);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        #skeleton-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .skeleton-frame {
+            width: 80%;
+            height: 80%;
+            border: 1px solid var(--structure);
+            position: relative;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .skeleton-corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--structure);
+        }
+
+        .sk-tl {
+            top: -1px;
+            left: -1px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .sk-tr {
+            top: -1px;
+            right: -1px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .sk-bl {
+            bottom: -1px;
+            left: -1px;
+            border-right: none;
+            border-top: none;
+        }
+
+        .sk-br {
+            bottom: -1px;
+            right: -1px;
+            border-left: none;
+            border-top: none;
+        }
+
+        .skeleton-content {
+            text-align: center;
+            width: 100%;
+        }
+
+        .skeleton-tag {
+            width: 200px;
+            height: 24px;
+            background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            margin: 0 auto 30px;
+            border: 1px solid #ddd;
+        }
+
+        .skeleton-title {
+            width: 400px;
+            height: 60px;
+            background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            margin: 0 auto 20px;
+        }
+
+        .skeleton-subtitle {
+            width: 300px;
+            height: 20px;
+            background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            margin: 0 auto 40px;
+        }
+
+        .skeleton-text {
+            width: 250px;
+            height: 12px;
+            background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        .skeleton-loader-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: #666;
+        }
+
+        .skeleton-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--soul);
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        .skeleton-meta {
+            position: absolute;
+            width: 90%;
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: #999;
+        }
+
+        .skeleton-meta-top {
+            top: 20px;
+        }
+
+        .skeleton-meta-bottom {
+            bottom: 20px;
+            border-top: 1px dashed #ddd;
+            padding-top: 10px;
+        }
+
+        .skeleton-meta>span {
+            flex: 1;
+        }
+
+        .skeleton-meta>span:first-child {
+            text-align: left;
+        }
+
+        .skeleton-meta>span:last-child {
+            text-align: right;
+        }
+    </style>
+    <style>
+        /* ====================
+   RESPONSIVE: MOBILE
+   ==================== */
+
+        /* 移动端禁用自定义光标 */
+        @media (pointer: coarse) {
+            * {
+                cursor: auto;
+            }
+
+            .cursor-follower,
+            .cursor-dot {
+                display: none !important;
+            }
+        }
+
+        /* ---- Tablet: 768px ---- */
+        @media (max-width: 768px) {
+            body {
+                font-size: 13px;
+            }
+
+            .page {
+                padding: 60px 20px;
+                min-height: auto;
+            }
+
+            .section-header,
+            .section-title {
+                padding-left: max(20px, calc((100vw - 1200px) / 2 + 20px));
+                padding-right: 20px;
+                font-size: 12px;
+                margin-bottom: 30px;
+            }
+
+            /* Cover */
+            .cover-hud-frame {
+                width: 92%;
+                height: 85%;
+            }
+
+            .RMname-en {
+                font-size: 36px;
+            }
+
+            .RMname-cn {
+                font-size: 16px;
+            }
+
+            .cover-meta-top,
+            .cover-meta-bottom {
+                font-size: 8px;
+            }
+
+            /* About */
+            .philo-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .philo-card {
+                padding: 20px;
+            }
+
+            .profile-name {
+                font-size: 26px;
+            }
+
+            /* Timeline */
+            .w-400 {
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            .exp-header {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .exp-role {
+                font-size: 16px;
+            }
+
+            .timeline {
+                padding: 20px 15px 20px 25px;
+            }
+
+            .exp-item::before {
+                left: -31px;
+            }
+
+            /* Project grid */
+            .proj-grid-layout {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .p-frame-img {
+                height: 200px;
+            }
+
+            /* Project cover layout */
+            .project-cover-layout {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .proj-deco-text {
+                display: none;
+            }
+
+            .proj-img-container {
+                margin: 0;
+                width: 100%;
+                height: 300px;
+                margin-bottom: 30px;
+            }
+
+            .proj-title-area {
+                width: 100%;
+                padding-left: 0;
+                border-left: none;
+                border-top: 1px solid var(--structure);
+                padding-top: 20px;
+            }
+
+            .proj-main-title {
+                font-size: 28px;
+            }
+
+            /* Visual cover */
+            .visual-title-center {
+                padding: 30px;
+            }
+
+            .visual-title-center h2 {
+                font-size: 32px !important;
+            }
+
+            /* Gallery */
+            .gallery-frame {
+                height: auto;
+            }
+
+            /* Skeleton */
+            .skeleton-frame {
+                width: 92%;
+                height: 85%;
+            }
+
+            .skeleton-title {
+                width: 80%;
+                height: 40px;
+            }
+
+            .skeleton-tag {
+                width: 60%;
+            }
+
+            .skeleton-subtitle {
+                width: 70%;
+            }
+        }
+
+        /* ---- Phone: 480px ---- */
+        @media (max-width: 480px) {
+            body {
+                font-size: 12px;
+            }
+
+            .page {
+                padding: 40px 16px;
+            }
+
+            .section-header,
+            .section-title {
+                padding-left: 16px;
+                padding-right: 16px;
+                font-size: 11px;
+                letter-spacing: 1px;
+                margin-bottom: 24px;
+                padding-bottom: 10px;
+            }
+
+            /* Cover */
+            .cover-section {
+                height: 100svh;
+                /* 使用 svh 避免移动端地址栏问题 */
+            }
+
+            .cover-hud-frame {
+                width: 94%;
+                height: 80%;
+                padding: 10px;
+            }
+
+            .RMname-en {
+                font-size: 24px;
+                margin-bottom: 12px;
+            }
+
+            .RMname-cn {
+                font-size: 14px;
+                margin-bottom: 20px;
+            }
+
+            .role-tag {
+                font-size: 10px;
+                padding: 3px 8px;
+                margin-bottom: 15px;
+            }
+
+            .cover-meta-top,
+            .cover-meta-bottom {
+                width: 94%;
+                font-size: 7px;
+            }
+
+            .cover-meta-top>span:nth-child(2),
+            .cover-meta-bottom>span:nth-child(2) {
+                display: none;
+                /* 隐藏中间装饰文字，避免挤压 */
+            }
+
+            .cover-main>div:last-child {
+                font-size: 8px !important;
+            }
+
+            /* About */
+            .avatar-strip {
+                margin-bottom: 24px;
+            }
+
+            .avatar-container {
+                height: 200px;
+            }
+
+            .profile-info {
+                margin-bottom: 30px;
+            }
+
+            .profile-name {
+                font-size: 22px;
+            }
+
+            .profile-meta {
+                font-size: 11px;
+            }
+
+            .philo-card {
+                padding: 16px;
+            }
+
+            .pc-title {
+                font-size: 14px;
+            }
+
+            .pc-desc {
+                font-size: 12px;
+            }
+
+            /* Timeline */
+            .timeline {
+                padding: 15px 10px 15px 20px;
+                margin-left: 5px;
+            }
+
+            .exp-item {
+                margin-bottom: 40px;
+            }
+
+            .exp-item::before {
+                left: -26px;
+                width: 7px;
+                height: 7px;
+            }
+
+            .exp-role {
+                font-size: 15px;
+            }
+
+            .exp-company {
+                font-size: 12px;
+            }
+
+            .exp-time {
+                font-size: 11px;
+            }
+
+            .exp-content {
+                font-size: 12px;
+                line-height: 1.7;
+            }
+
+            /* Projects */
+            .p-frame-img {
+                height: 180px;
+            }
+
+            .p-frame-title {
+                font-size: 14px;
+            }
+
+            .p-frame-desc {
+                font-size: 11px;
+            }
+
+            .proj-card-frame {
+                padding: 12px;
+            }
+
+            /* Visual cover */
+            .visual-title-center {
+                padding: 20px;
+            }
+
+            .visual-title-center h2 {
+                font-size: 24px !important;
+                letter-spacing: 2px !important;
+            }
+
+            /* 在 768px 断点内追加 */
+            @media (max-width: 768px) {
+                .visual-cover {
+                    align-items: center;
+                }
+
+                .visual-title-center {
+                    display: inline-block;
+                    padding: 30px 40px;
+                }
+            }
+
+            /* 在 480px 断点内追加 */
+            @media (max-width: 480px) {
+                .visual-title-center {
+                    padding: 20px 24px;
+                }
+            }
+
+
+            /* Gallery */
+            .card-line {
+                padding: 8px;
+                padding-right: 40px !important;
+            }
+
+            /* Footer */
+            footer {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+                font-size: 10px !important;
+            }
+        }
     </style>
 </head>
 
 
 <body>
+    <!-- 骨架屏加载器 -->
+    <div id="skeleton-loader">
+        <div class="skeleton-frame">
+            <div class="skeleton-corner sk-tl"></div>
+            <div class="skeleton-corner sk-tr"></div>
+            <div class="skeleton-corner sk-bl"></div>
+            <div class="skeleton-corner sk-br"></div>
+
+            <div class="skeleton-meta skeleton-meta-top">
+                <span>LOADING...</span>
+                <span>[ INITIALIZING ]</span>
+                <span>PLEASE WAIT</span>
+            </div>
+
+            <div class="skeleton-content">
+                <div class="skeleton-tag"></div>
+                <div class="skeleton-title"></div>
+                <div class="skeleton-subtitle"></div>
+                <div class="skeleton-text"></div>
+            </div>
+
+            <div class="skeleton-loader-indicator">
+                <div class="skeleton-dot"></div>
+                <span>LOADING CONTENT</span>
+            </div>
+
+            <div class="skeleton-meta skeleton-meta-bottom">
+                <span>DCP SYSTEM</span>
+                <span>/// RENDERING ///</span>
+                <span>v3.1</span>
+            </div>
+        </div>
+    </div>
+
+
 
     <!-- 全局背景网格 -->
     <div class="global-grid-bg"></div>
@@ -1396,6 +1931,37 @@
             const oldClones = document.querySelectorAll('.clone-card');
             oldClones.forEach(el => el.remove());
         });
+
+
+
+
+
+
+
+
+
+        // 骨架屏加载逻辑
+        (function () {
+            const skeletonLoader = document.getElementById('skeleton-loader');
+            if (!skeletonLoader) return;
+
+            let hidden = false;
+            const hideSkeleton = () => {
+                if (!hidden && skeletonLoader) {
+                    hidden = true;
+                    skeletonLoader.classList.add('hidden');
+                }
+            };
+
+            // 页面完全加载后隐藏
+            window.addEventListener('load', () => {
+                setTimeout(hideSkeleton, 300);
+            });
+
+            // 超时保护（5秒）
+            setTimeout(hideSkeleton, 5000);
+        })();
+
     </script>
 </body>
 
