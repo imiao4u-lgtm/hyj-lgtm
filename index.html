@@ -1585,18 +1585,19 @@
             </div>
             <div class="philo-card interactable">
                 <span class="pc-num">02.</span>
-                <h3 class="pc-title">「以可见逻辑切割复杂」</h3>
-                <p class="pc-desc">设计不在于减少步骤，而在于拆解算法的决策路径。让非线性的系统过程变得直观，使用户对智能的每一步推演都有掌控感。</p>
+                <h3 class="pc-title">「以可见结构切割复杂」</h3>
+                <p class="pc-desc">设计不在于减少步骤，而在于将算法的决策路径拆解为可定位、可校验的结构单元。让非线性的系统过程变得可追溯，使用户对智能的每一步推演都拥有干预权。</p>
             </div>
             <div class="philo-card interactable">
                 <span class="pc-num">03.</span>
-                <h3 class="pc-title">「构建智能的解释机制」</h3>
-                <p class="pc-desc">从“操作引导”转向“辅助理解”。我通过信号系统与表达框架，将AI输出的不确定性转化为可信赖的反馈，在生成式交互中建立信任。</p>
+                <h3 class="pc-title">「构建过程的可控性」</h3>
+                <p class="pc-desc">
+                    从"操作引导"转向"控制权设计"。通过信号系统与结构化表达框架，将AI生成过程中的关键节点转化为用户可校验、可干预的决策接口——让用户在每一步都拥有介入和修正的能力。</p>
             </div>
             <div class="philo-card interactable">
                 <span class="pc-num">04.</span>
-                <h3 class="pc-title">「Design for AI ：人机认知的翻译层」</h3>
-                <p class="pc-desc">AI时代的本质是认知的转译。设计不再只是构建界面，而是作为算法意图的翻译官，在智能的不确定性中，为人类捕捉方向与反馈。</p>
+                <h3 class="pc-title">「Design for AI：人机控制权的分配层」</h3>
+                <p class="pc-desc">AI时代的设计本质是控制权分配。设计不再只是构建界面，而是定义人与算法之间的权责边界——何时AI自主执行，何时人类校验决策，何时双方需要相互确认。</p>
             </div>
         </div>
     </div>
@@ -1618,12 +1619,13 @@
                     1. 构建交互框架 </div>
                 <div class="exp-content w-400 gap-20" style="color: #888;">
                     主导 RaaS（Result-as-a-Service）AI
-                    产品的信息架构与交互框架设计，兼顾可拓展性、操作性与可读性。该架构成为团队稳定产品逻辑与用户感知的核心支点，并为后续功能模块提供统一结构基础。
+                    产品的信息架构与交互框架设计，定义用户在生成式流程中的控制接口与验证节点，兼顾可拓展性、操作性与可追溯性。该架构成为团队稳定产品逻辑与用户决策权分配的核心支点，并为后续功能模块提供统一结构基础。
                 </div>
                 <div class="exp-content w-400 gap-5">
-                    2. 定义内容表达</div>
+                    2. 定义人机协作协议</div>
                 <div class="exp-content w-400 gap-20" style="color: #888;">
-                    负责工作流程部分呈现逻辑，系统梳理RaaS产品场景下的关键用户体验挑战（可信度、解释性、用户主导权、可发现性），从视觉结构入手，提升内容的可读性、解释性与用户理解度。
+                    系统梳理RaaS产品场景下的关键用户体验挑战（结果可验证性、过程可追溯性、用户干预权、风险可定位性），并据此提出交互设计原则与方法论，成为系统 prompt
+                    的重要组成。建立团队的用户体验设计基线，指导后续迭代。
                 </div>
                 <div class="exp-content w-400 gap-5">
                     3. 沉淀可视化工作流
@@ -1734,19 +1736,17 @@
     <div class="page hidden-trigger">
         <div class="section-title"><span class="soul-dot"></span>SELECTED PROJECTS</div>
         <div class="proj-grid-layout">
-            <!-- 项目 1: JAXX (使用真实图片) -->
+            <!-- 项目 1: JAXX -->
             <div class="proj-card-frame interactable" data-target="project-jaxx.html">
                 <div class="p-frame-img">
-                    <!-- 去掉了内联样式，交给 CSS 类控制 -->
                     <img src="IMG/jaxx-cover.jpg" alt="cover">
                 </div>
                 <div class="p-frame-title">JAXX 产品创新雷达</div>
                 <div class="p-frame-desc">RaaS / AI Agent / 消费品洞察</div>
             </div>
-            <!-- 项目 2: 占位图测试 -->
+            <!-- 项目 2: 仓单 -->
             <div class="proj-card-frame interactable" data-target="project-finance.html">
                 <div class="p-frame-img">
-                    <!-- 使用 picsum 随机图作为演示，尺寸故意设为 1400x768 -->
                     <img src="IMG/warehouse-cover.png" alt="cover">
                 </div>
                 <div class="p-frame-title">仓单融资项目</div>
@@ -1932,14 +1932,6 @@
             oldClones.forEach(el => el.remove());
         });
 
-
-
-
-
-
-
-
-
         // 骨架屏加载逻辑
         (function () {
             const skeletonLoader = document.getElementById('skeleton-loader');
@@ -1963,6 +1955,8 @@
         })();
 
     </script>
+<script src="../scripts/lazyload_images.js"></script>
+<script src="../scripts/lazyload_images.js"></script>
 </body>
 
 </html>
