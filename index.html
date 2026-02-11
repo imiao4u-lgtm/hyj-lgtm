@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 
 <head>
@@ -1886,18 +1886,17 @@
         });
 
 
-        //跳转逻辑
-        const cards = document.querySelectorAll('.proj-card-frame');
+        // Jump logic
         const curtain = document.querySelector('.page-transition-curtain');
-
-        cards.forEach((card) => {
-            card.addEventListener('click', (e) => {
-                const targetUrl = card.getAttribute('data-target');
-                if (targetUrl) {
-                    e.preventDefault();
-                    performTransition(card, targetUrl);
-                }
-            });
+        // Use event delegation to bind clicks, ensuring back navigation works reliably
+        document.addEventListener('click', (e) => {
+            const card = e.target.closest('.proj-card-frame');
+            if (!card) return;
+            const targetUrl = card.getAttribute('data-target');
+            if (targetUrl) {
+                e.preventDefault();
+                performTransition(card, targetUrl);
+            }
         });
         function performTransition(originalCard, targetUrl) {
             const rect = originalCard.getBoundingClientRect();
@@ -1955,7 +1954,6 @@
         })();
 
     </script>
-<script src="../scripts/lazyload_images.js"></script>
 <script src="../scripts/lazyload_images.js"></script>
 </body>
 
